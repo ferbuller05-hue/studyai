@@ -103,7 +103,6 @@
             padding-top: 12px;
             border-top: 1px solid #1e1e1e;
         }
-        .input-hint { font-size: 12px; color: #333; }
 
         .btn-send {
             background: #00d4aa;
@@ -133,7 +132,7 @@
             transition: all 0.2s;
             background: #161616;
         }
-        .upload-area:hover { border-color: #00d4aa55; background: #161616; }
+        .upload-area:hover { border-color: #00d4aa55; }
         .upload-area.dragover { border-color: #00d4aa; }
         .upload-icon { font-size: 32px; margin-bottom: 12px; }
         .upload-area p { color: #555; font-size: 14px; }
@@ -172,25 +171,176 @@
         /* DIVIDER */
         .divider { height: 1px; background: #1a1a1a; margin: 40px 0; }
 
-        /* TOPICOS */
-        .topicos-box {
+        /* ── DIAGNÓSTICO ── */
+        .diagnostico-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .diagnostico-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e8e8e8;
+        }
+        .diagnostico-badge {
+            background: #00d4aa15;
+            color: #00d4aa;
+            border: 1px solid #00d4aa33;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .resumo-box {
+            background: #0a1f1a;
+            border: 1px solid #00d4aa22;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .resumo-box strong { color: #00d4aa; }
+
+        /* TEMAS GRID */
+        .temas-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .tema-card {
             background: #161616;
             border: 1px solid #1e1e1e;
             border-radius: 14px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .topicos-box .label { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; font-weight: 600; }
-        .topico-tag {
-            display: inline-block;
-            background: #0a1f1a;
-            color: #00d4aa;
-            border: 1px solid #00d4aa22;
-            padding: 5px 14px;
-            border-radius: 20px;
-            margin: 3px;
+        .tema-card.prioridade-alta { border-left: 3px solid #00d4aa; }
+        .tema-card.prioridade-media { border-left: 3px solid #f59e0b; }
+        .tema-card.prioridade-baixa { border-left: 3px solid #444; }
+
+        .tema-rank {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2a2a2a;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .tema-info { flex: 1; min-width: 0; }
+        .tema-nome {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e8e8e8;
+            margin-bottom: 6px;
+        }
+        .tema-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .nivel-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nivel-basico { background: #1a2e1a; color: #4ade80; }
+        .nivel-intermediario { background: #2e2a1a; color: #f59e0b; }
+        .nivel-avancado { background: #2e1a1a; color: #f87171; }
+
+        .prioridade-pill {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 6px;
+        }
+        .prio-alta { background: #0a1f1a; color: #00d4aa; }
+        .prio-media { background: #1f1a0a; color: #f59e0b; }
+        .prio-baixa { background: #1a1a1a; color: #555; }
+
+        /* BARRA FREQUÊNCIA */
+        .freq-wrapper { display: flex; align-items: center; gap: 10px; min-width: 120px; }
+        .freq-bar-bg {
+            flex: 1;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .freq-bar-fill {
+            height: 100%;
+            background: #00d4aa;
+            border-radius: 2px;
+            transition: width 0.8s ease;
+        }
+        .freq-pct { font-size: 12px; color: #444; min-width: 32px; text-align: right; }
+
+        /* TRILHA E DEPENDÊNCIAS */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 600px) { .info-section { grid-template-columns: 1fr; } }
+
+        .info-card {
+            background: #161616;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 18px 20px;
+        }
+        .info-card-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+        }
+
+        .ordem-list { list-style: none; }
+        .ordem-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid #1a1a1a;
             font-size: 13px;
+            color: #ccc;
         }
+        .ordem-list li:last-child { border-bottom: none; }
+        .ordem-num {
+            width: 22px;
+            height: 22px;
+            background: #1e1e1e;
+            color: #555;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .ordem-list li:first-child .ordem-num { background: #00d4aa22; color: #00d4aa; }
+
+        .dep-list { list-style: none; }
+        .dep-list li {
+            font-size: 12px;
+            color: #777;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a1a;
+            line-height: 1.5;
+        }
+        .dep-list li:last-child { border-bottom: none; }
+        .dep-list li::before { content: "→ "; color: #00d4aa; font-weight: 700; }
 
         /* RESULTS */
         .results-title {
@@ -313,21 +463,6 @@
             transition: all 0.2s;
         }
         .chat-btn:hover { transform: scale(1.1); }
-        .chat-btn .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: #ff4444;
-            color: white;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 11px;
-            font-weight: 700;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
 
         .chat-panel {
             position: fixed;
@@ -463,7 +598,7 @@
 
 <div class="header">
     <div class="logo">Study<span>AI</span></div>
-    <p class="tagline">IA que encontra os melhores vídeos para o que você precisa estudar</p>
+    <p class="tagline">Diagnóstico inteligente do seu material de estudo</p>
 </div>
 
 <div class="container">
@@ -482,7 +617,7 @@
                 <div class="input-footer">
                     <button type="submit" class="btn-send">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                        Buscar vídeos
+                        Diagnosticar
                     </button>
                 </div>
             </div>
@@ -501,26 +636,90 @@
             <div class="file-ok" id="file-ok">
                 <span id="file-name"></span>
             </div>
-            <button type="submit" class="btn-upload">Analisar e encontrar vídeos</button>
+            <button type="submit" class="btn-upload">Analisar material</button>
         </form>
     </div>
 
-    {% if topicos or videos %}
+    {% if diagnostico %}
     <div class="divider"></div>
-    {% endif %}
 
-    {% if topicos %}
-    <div class="topicos-box">
-        <div class="label">Tópicos identificados</div>
-        {% for topico in topicos %}
-        <span class="topico-tag">{{ topico }}</span>
-        {% endfor %}
+    <!-- DIAGNÓSTICO -->
+    <div class="diagnostico-header">
+        <div class="diagnostico-title">📊 Diagnóstico do Material</div>
+        <span class="diagnostico-badge">{{ diagnostico.temas | length }} temas</span>
+    </div>
+
+    {% if diagnostico.resumo %}
+    <div class="resumo-box">
+        <strong>Foco:</strong> {{ diagnostico.resumo }}
     </div>
     {% endif %}
 
+    <!-- TEMAS -->
+    <div class="temas-grid">
+        {% for tema in diagnostico.temas %}
+        <div class="tema-card prioridade-{{ tema.prioridade | replace('é', 'e') | lower }}">
+            <div class="tema-rank">#{{ loop.index }}</div>
+            <div class="tema-info">
+                <div class="tema-nome">{{ tema.nome }}</div>
+                <div class="tema-meta">
+                    <span class="nivel-badge nivel-{{ tema.nivel | replace('é', 'e') | replace('ê', 'e') | lower | replace('intermediario', 'intermediario') | replace('intermediário', 'intermediario') | replace('básico', 'basico') | replace('avançado', 'avancado') }}">
+                        {% if tema.nivel == 'básico' %}Básico
+                        {% elif tema.nivel in ['intermediário', 'intermediario'] %}Intermediário
+                        {% elif tema.nivel in ['avançado', 'avancado'] %}Avançado
+                        {% else %}{{ tema.nivel }}{% endif %}
+                    </span>
+                    <span class="prioridade-pill {% if tema.prioridade == 'alta' %}prio-alta{% elif tema.prioridade in ['média', 'media'] %}prio-media{% else %}prio-baixa{% endif %}">
+                        {% if tema.prioridade == 'alta' %}🔴 Alta
+                        {% elif tema.prioridade in ['média', 'media'] %}🟡 Média
+                        {% else %}⚪ Baixa{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="freq-wrapper">
+                <div class="freq-bar-bg">
+                    <div class="freq-bar-fill" style="width: {{ tema.frequencia }}%"></div>
+                </div>
+                <span class="freq-pct">{{ tema.frequencia }}%</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- TRILHA + DEPENDÊNCIAS -->
+    <div class="info-section">
+        {% if diagnostico.ordem_recomendada %}
+        <div class="info-card">
+            <div class="info-card-title">🗺 Ordem de Estudo</div>
+            <ul class="ordem-list">
+                {% for item in diagnostico.ordem_recomendada %}
+                <li>
+                    <span class="ordem-num">{{ loop.index }}</span>
+                    {{ item }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if diagnostico.dependencias %}
+        <div class="info-card">
+            <div class="info-card-title">🔗 Dependências</div>
+            <ul class="dep-list">
+                {% for dep in diagnostico.dependencias %}
+                <li>{{ dep }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    <!-- VÍDEOS -->
     {% if videos %}
     <div class="results-title">
-        <span>Melhores vídeos para estudar</span>
+        <span>Vídeos recomendados</span>
         <span class="results-count">{{ videos|length }} vídeos</span>
     </div>
     {% for video in videos %}
@@ -539,10 +738,7 @@
 </div>
 
 <!-- CHAT FLUTUANTE -->
-<button class="chat-btn" onclick="toggleChat()" title="Assistente de estudos">
-    💬
-    <span class="badge" id="chat-badge"></span>
-</button>
+<button class="chat-btn" onclick="toggleChat()" title="Assistente de estudos">💬</button>
 
 <div class="chat-panel" id="chat-panel">
     <div class="chat-header">
@@ -566,8 +762,8 @@
 
 <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
-    <p>Buscando com IA...</p>
-    <small>Isso leva alguns segundos</small>
+    <p>Analisando material...</p>
+    <small>A IA está diagnosticando seu conteúdo</small>
 </div>
 
 <script>
@@ -587,23 +783,25 @@
         document.getElementById('loading').classList.add('visible');
     }
 
-    const input = document.getElementById('arquivo');
+    const inputFile = document.getElementById('arquivo');
     const uploadArea = document.getElementById('upload-area');
     const fileOk = document.getElementById('file-ok');
     const fileName = document.getElementById('file-name');
 
+    // Tópicos do diagnóstico para o chat
+    let topicosAtivos = [];
+    {% if diagnostico and diagnostico.temas %}
+    topicosAtivos = {{ diagnostico.temas | map(attribute='nome') | list | tojson }};
+    {% endif %}
+
     // CHAT
     let chatAberto = false;
     let historico = [];
-    let topicosAtivos = {{ topicos | tojson if topicos else '[]' }};
 
     function toggleChat() {
         chatAberto = !chatAberto;
         document.getElementById('chat-panel').classList.toggle('open', chatAberto);
-        if (chatAberto) {
-            document.getElementById('chat-badge').style.display = 'none';
-            document.getElementById('chat-input').focus();
-        }
+        if (chatAberto) document.getElementById('chat-input').focus();
     }
 
     function chatKeyDown(e) {
@@ -650,10 +848,10 @@
         return div;
     }
 
-    if (input) {
-        input.addEventListener('change', () => {
-            if (input.files[0]) {
-                fileName.textContent = '✓ ' + input.files[0].name;
+    if (inputFile) {
+        inputFile.addEventListener('change', () => {
+            if (inputFile.files[0]) {
+                fileName.textContent = '✓ ' + inputFile.files[0].name;
                 fileOk.classList.add('visible');
                 uploadArea.style.borderColor = '#00d4aa';
             }
@@ -664,7 +862,7 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             if (e.dataTransfer.files[0]) {
-                input.files = e.dataTransfer.files;
+                inputFile.files = e.dataTransfer.files;
                 fileName.textContent = '✓ ' + e.dataTransfer.files[0].name;
                 fileOk.classList.add('visible');
             }

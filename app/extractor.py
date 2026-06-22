@@ -71,6 +71,121 @@ Máximo 8 tópicos. Seja específico."""
     return topicos[:8]
 
 
+def diagnosticar_material_imagem(arquivo_bytes: bytes, tipo_mime: str) -> dict:
+    """Diagnóstico direto de imagem usando Claude Vision."""
+    import json
+    imagem_b64 = base64.standard_b64encode(arquivo_bytes).decode("utf-8")
+
+    prompt_json = """{
+  "temas": [{"nome": "...", "frequencia": 35, "nivel": "básico|intermediário|avançado", "prioridade": "alta|média|baixa"}],
+  "ordem_recomendada": ["tema1", "tema2"],
+  "dependencias": ["Para estudar X, precisa entender Y primeiro"],
+  "resumo": "Uma frase resumindo o foco do material"
+}"""
+
+    resposta = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=1500,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": tipo_mime,
+                            "data": imagem_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": f"""Você é um especialista em análise educacional.
+Analise esta imagem de um material de estudo (prova, caderno, lista, resumo).
+Retorne APENAS um JSON válido neste formato:
+{prompt_json}
+
+Regras:
+- Máximo 8 temas
+- frequencia deve somar 100 entre todos os temas
+- Ordene por prioridade (alta primeiro)
+- Retorne APENAS o JSON, sem texto adicional"""
+                    }
+                ],
+            }
+        ],
+    )
+    try:
+        texto = resposta.content[0].text.strip()
+        if texto.startswith("```"):
+            texto = texto.split("```")[1]
+            if texto.startswith("json"):
+                texto = texto[4:]
+        return json.loads(texto.strip())
+    except Exception:
+        return {"temas": [], "ordem_recomendada": [], "dependencias": [], "resumo": ""}
+
+
+def diagnosticar_material(conteudo: str) -> dict:
+    """
+    Analisa profundamente o material e retorna um diagnóstico completo.
+    conteudo pode ser texto extraído de PDF, imagem, ou prompt do usuário.
+    """
+    resposta = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=1500,
+        messages=[
+            {
+                "role": "user",
+                "content": f"""Você é um especialista em análise educacional.
+Analise o material abaixo e retorne um diagnóstico estruturado em JSON.
+
+Material:
+{conteudo[:4000]}
+
+Retorne APENAS um JSON válido neste formato exato:
+{{
+  "temas": [
+    {{
+      "nome": "Nome do tema",
+      "frequencia": 35,
+      "nivel": "básico|intermediário|avançado",
+      "prioridade": "alta|média|baixa"
+    }}
+  ],
+  "ordem_recomendada": ["tema1", "tema2", "tema3"],
+  "dependencias": ["Para estudar X, precisa entender Y primeiro"],
+  "resumo": "Uma frase resumindo o foco principal do material"
+}}
+
+Regras:
+- Máximo 8 temas
+- frequencia deve somar 100 entre todos os temas
+- Ordene os temas por prioridade (alta primeiro)
+- Retorne APENAS o JSON, sem texto adicional"""
+            }
+        ]
+    )
+
+    import json
+    try:
+        texto = resposta.content[0].text.strip()
+        # Remove possível markdown
+        if texto.startswith("```"):
+            texto = texto.split("```")[1]
+            if texto.startswith("json"):
+                texto = texto[4:]
+        return json.loads(texto.strip())
+    except Exception:
+        # Fallback simples se o JSON falhar
+        return {
+            "temas": [],
+            "ordem_recomendada": [],
+            "dependencias": [],
+            "resumo": ""
+        }
+
+
 def extrair_topicos_do_prompt(prompt: str) -> list[str]:
     resposta = client.messages.create(
         model="claude-haiku-4-5",

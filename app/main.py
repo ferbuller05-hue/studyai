@@ -2,12 +2,12 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
-from app.extractor import processar_arquivo, extrair_topicos_do_prompt
+from app.extractor import processar_arquivo, extrair_topicos_do_prompt, diagnosticar_material, diagnosticar_material_imagem, extrair_texto_pdf, extrair_topicos_da_imagem
 from app.youtube import buscar_videos_por_topicos
 from app.chat import responder
-import json
+import base64
 
-app = FastAPI(title="StudyAI", version="0.3.0")
+app = FastAPI(title="StudyAI", version="0.4.0")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
@@ -21,11 +21,32 @@ async def home(request: Request):
 @app.post("/analisar", response_class=HTMLResponse)
 async def analisar(request: Request, arquivo: UploadFile = File(...)):
     conteudo = await arquivo.read()
-    topicos = processar_arquivo(conteudo, arquivo.filename, arquivo.content_type or "")
-    videos = buscar_videos_por_topicos(topicos)
+    extensao = arquivo.filename.lower().split('.')[-1] if '.' in arquivo.filename else ''
+
+    # Extrai e diagnostica
+    if extensao == 'pdf' or 'pdf' in (arquivo.content_type or ''):
+        texto = extrair_texto_pdf(conteudo)
+        diagnostico = diagnosticar_material(texto) if texto.strip() else {}
+    else:
+        mime = 'image/jpeg'
+        if extensao == 'png': mime = 'image/png'
+        elif extensao == 'webp': mime = 'image/webp'
+        diagnostico = diagnosticar_material_imagem(conteudo, mime)
+
+    # Busca vídeos pelos temas de alta prioridade
+    temas_prioritarios = [
+        t["nome"] for t in diagnostico.get("temas", [])
+        if t.get("prioridade") in ["alta", "média"]
+    ][:5]
+
+    if not temas_prioritarios:
+        temas_prioritarios = [t["nome"] for t in diagnostico.get("temas", [])][:5]
+
+    videos = buscar_videos_por_topicos(temas_prioritarios) if temas_prioritarios else []
+
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "topicos": topicos,
+        "diagnostico": diagnostico,
         "videos": videos,
         "modo": "arquivo"
     })
@@ -33,11 +54,21 @@ async def analisar(request: Request, arquivo: UploadFile = File(...)):
 
 @app.post("/buscar", response_class=HTMLResponse)
 async def buscar(request: Request, prompt: str = Form(...)):
-    topicos = extrair_topicos_do_prompt(prompt)
-    videos = buscar_videos_por_topicos(topicos)
+    diagnostico = diagnosticar_material(prompt)
+
+    temas_prioritarios = [
+        t["nome"] for t in diagnostico.get("temas", [])
+        if t.get("prioridade") in ["alta", "média"]
+    ][:5]
+
+    if not temas_prioritarios:
+        temas_prioritarios = [t["nome"] for t in diagnostico.get("temas", [])][:5]
+
+    videos = buscar_videos_por_topicos(temas_prioritarios) if temas_prioritarios else []
+
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "topicos": topicos,
+        "diagnostico": diagnostico,
         "videos": videos,
         "prompt": prompt,
         "modo": "texto"
