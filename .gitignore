@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+uploads/
+.venv/
+venv/
+.env
+.env.save
+studyai

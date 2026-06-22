@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyAI — Encontre os melhores vídeos para estudar</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: #1a1a2e; color: white; padding: 24px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { color: #aaa; font-size: 16px; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .upload-box { background: white; border-radius: 12px; padding: 40px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .upload-box h2 { margin-bottom: 16px; font-size: 20px; }
+        .upload-box p { color: #666; margin-bottom: 24px; }
+        input[type="file"] { display: block; margin: 0 auto 20px; }
+        button { background: #1a1a2e; color: white; border: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #16213e; }
+        .loading { display: none; color: #666; margin-top: 16px; }
+        .topicos { background: white; border-radius: 12px; padding: 24px; margin-top: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .topicos h2 { margin-bottom: 16px; color: #1a1a2e; }
+        .topico-tag { display: inline-block; background: #e8f4fd; color: #1a1a2e; padding: 6px 14px; border-radius: 20px; margin: 4px; font-size: 14px; }
+        .videos { margin-top: 32px; }
+        .videos h2 { margin-bottom: 16px; color: #1a1a2e; font-size: 20px; }
+        .video-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 16px; align-items: center; }
+        .video-card img { width: 160px; height: 90px; border-radius: 8px; object-fit: cover; }
+        .video-info h3 { font-size: 15px; margin-bottom: 6px; }
+        .video-info p { color: #666; font-size: 13px; margin-bottom: 8px; }
+        .video-info a { background: #ff0000; color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; }
+        .topico-label { display: inline-block; background: #1a1a2e; color: white; padding: 2px 10px; border-radius: 10px; font-size: 11px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>StudyAI</h1>
+        <p>Mande sua prova ou material — a IA encontra os melhores vídeos pra você estudar</p>
+    </div>
+
+    <div class="container">
+        <div class="upload-box">
+            <h2>Envie seu PDF</h2>
+            <p>Prova, simulado, lista de exercícios ou qualquer material de estudo</p>
+            <form action="/analisar" method="post" enctype="multipart/form-data" onsubmit="mostrarLoading()">
+                <input type="file" name="arquivo" accept=".pdf" required>
+                <button type="submit">Encontrar vídeos</button>
+            </form>
+            <p class="loading" id="loading">Analisando seu PDF e buscando os melhores vídeos... aguarde</p>
+        </div>
+
+        {% if topicos %}
+        <div class="topicos">
+            <h2>Tópicos identificados</h2>
+            {% for topico in topicos %}
+            <span class="topico-tag">{{ topico }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if videos %}
+        <div class="videos">
+            <h2>Melhores vídeos para estudar</h2>
+            {% for video in videos %}
+            <div class="video-card">
+                <img src="{{ video.thumbnail }}" alt="{{ video.titulo }}">
+                <div class="video-info">
+                    <span class="topico-label">{{ video.topico }}</span>
+                    <h3>{{ video.titulo }}</h3>
+                    <p>{{ video.canal }}</p>
+                    <a href="{{ video.url }}" target="_blank">Assistir no YouTube</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function mostrarLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
