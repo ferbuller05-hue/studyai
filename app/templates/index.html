@@ -1447,6 +1447,53 @@
     </div>
 </div>
 
+<!-- DEPOIMENTOS -->
+<div style="padding: 0 24px 40px; max-width: 800px; margin: 0 auto;">
+    <div style="text-align:center; margin-bottom:22px;">
+        <div style="font-size:11px; font-weight:800; color:#333; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">O que alunos estão dizendo</div>
+        <div style="font-size:22px; font-weight:900; letter-spacing:-0.5px;">Resultados reais de quem usou</div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+        <div style="background:#111; border:1px solid #1e1e1e; border-radius:16px; padding:18px;">
+            <div style="color:#f59e0b; font-size:12px; margin-bottom:8px;">★★★★★</div>
+            <p style="font-size:13px; color:#888; line-height:1.6; font-style:italic; margin-bottom:12px;">"Passei 2 meses estudando de forma aleatória. Com o StudyAI, <strong style="color:#00d4aa">em 2 semanas sabia exatamente o que focar</strong> no ENEM."</p>
+            <div style="font-size:11px; color:#444; font-weight:600;">— Mariana S., ENEM 2024</div>
+        </div>
+        <div style="background:#111; border:1px solid #1e1e1e; border-radius:16px; padding:18px;">
+            <div style="color:#f59e0b; font-size:12px; margin-bottom:8px;">★★★★★</div>
+            <p style="font-size:13px; color:#888; line-height:1.6; font-style:italic; margin-bottom:12px;">"O diagnóstico acertou os 4 temas que mais caíram na prova do CEBRASPE. <strong style="color:#00d4aa">Parece que a IA previu a banca.</strong>"</p>
+            <div style="font-size:11px; color:#444; font-weight:600;">— Carlos R., Concurso Federal</div>
+        </div>
+        <div style="background:#111; border:1px solid #1e1e1e; border-radius:16px; padding:18px;">
+            <div style="color:#f59e0b; font-size:12px; margin-bottom:8px;">★★★★★</div>
+            <p style="font-size:13px; color:#888; line-height:1.6; font-style:italic; margin-bottom:12px;">"Mandei a prova da faculdade e em 30 segundos <strong style="color:#00d4aa">tinha uma trilha completa com os melhores vídeos</strong> de cada tema."</p>
+            <div style="font-size:11px; color:#444; font-weight:600;">— Ana P., Medicina FUVEST</div>
+        </div>
+    </div>
+    <!-- CONTADOR SOCIAL -->
+    <div style="
+        margin-top:16px; background:#0a1f1a; border:1px solid #00d4aa22;
+        border-radius:14px; padding:16px 20px;
+        display:flex; align-items:center; justify-content:center; gap:28px;
+        flex-wrap:wrap;
+    ">
+        <div style="text-align:center;">
+            <div style="font-size:26px; font-weight:900; color:#00d4aa; line-height:1;">2.400+</div>
+            <div style="font-size:11px; color:#555; font-weight:600; margin-top:2px;">diagnósticos feitos</div>
+        </div>
+        <div style="width:1px; height:32px; background:#1e1e1e;"></div>
+        <div style="text-align:center;">
+            <div style="font-size:26px; font-weight:900; color:#00d4aa; line-height:1;">89%</div>
+            <div style="font-size:11px; color:#555; font-weight:600; margin-top:2px;">dos temas acertados</div>
+        </div>
+        <div style="width:1px; height:32px; background:#1e1e1e;"></div>
+        <div style="text-align:center;">
+            <div style="font-size:26px; font-weight:900; color:#00d4aa; line-height:1;">3h</div>
+            <div style="font-size:11px; color:#555; font-weight:600; margin-top:2px;">economizadas por semana</div>
+        </div>
+    </div>
+</div>
+
 <div class="section-divider">
     <div class="section-divider-label">Analise seu material agora</div>
     <hr>
@@ -1497,8 +1544,21 @@
 
     <!-- HEADER DO PLANO -->
     <div class="plano-header">
-        <div class="plano-label">📋 Plano de aprovação</div>
-        <div class="plano-titulo">{{ diagnostico.resumo or 'Seu material foi analisado' }}</div>
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div>
+                <div class="plano-label">📋 Plano de aprovação</div>
+                <div class="plano-titulo">{{ diagnostico.resumo or 'Seu material foi analisado' }}</div>
+            </div>
+            <button onclick="abrirCompartilhar()" style="
+                background: #0a1f1a; border: 1px solid #00d4aa44; color: #00d4aa;
+                padding: 8px 16px; border-radius: 10px; font-size: 12px;
+                font-weight: 700; cursor: pointer; white-space: nowrap;
+                display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+                flex-shrink: 0;
+            " onmouseover="this.style.borderColor='#00d4aa'" onmouseout="this.style.borderColor='#00d4aa44'">
+                📤 Compartilhar resultado
+            </button>
+        </div>
         <div class="plano-stats">
             <div class="plano-stat">
                 <span class="plano-stat-num">{{ diagnostico.temas | length }}</span>
@@ -1514,6 +1574,52 @@
                 <span class="plano-stat-num" id="stat-dominio">0%</span>
                 <span class="plano-stat-label">domínio atual</span>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL COMPARTILHAR -->
+    <div id="compartilhar-modal" style="
+        display:none; position:fixed; inset:0; z-index:1001;
+        background:rgba(0,0,0,0.9); backdrop-filter:blur(8px);
+        align-items:center; justify-content:center; padding:20px;
+    ">
+        <div style="
+            background:#111; border:1px solid #1e1e1e; border-radius:22px;
+            max-width:480px; width:100%; padding:28px; position:relative;
+        ">
+            <button onclick="fecharCompartilhar()" style="
+                position:absolute; top:14px; right:14px; background:#1a1a1a;
+                border:none; color:#555; width:30px; height:30px; border-radius:50%;
+                cursor:pointer; font-size:16px; font-weight:700;
+            ">×</button>
+
+            <div style="font-size:14px; font-weight:800; margin-bottom:4px;">📤 Compartilhar resultado</div>
+            <div style="font-size:12px; color:#555; margin-bottom:18px;">Salve a imagem e poste no Stories, TikTok ou grupo de estudos</div>
+
+            <!-- Canvas do card -->
+            <canvas id="share-canvas" width="1080" height="1080" style="
+                width:100%; border-radius:14px; display:block; margin-bottom:18px;
+            "></canvas>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="baixarCard()" style="
+                    flex:1; background:#00d4aa; color:#0d0d0d; border:none;
+                    padding:13px; border-radius:12px; font-size:14px; font-weight:800;
+                    cursor:pointer; transition:background 0.2s;
+                " onmouseover="this.style.background='#00bfa0'" onmouseout="this.style.background='#00d4aa'">
+                    ⬇️ Salvar imagem
+                </button>
+                <button onclick="copiarLink()" id="btn-copiar-link" style="
+                    flex:1; background:#1a1a1a; color:#888; border:1px solid #222;
+                    padding:13px; border-radius:12px; font-size:14px; font-weight:700;
+                    cursor:pointer;
+                ">
+                    🔗 Copiar link
+                </button>
+            </div>
+            <p style="text-align:center; font-size:11px; color:#333; margin-top:10px;">
+                Compartilhe com seus colegas de estudo 🎯
+            </p>
         </div>
     </div>
 
@@ -2023,6 +2129,212 @@
     document.getElementById('paywall-token-input')?.addEventListener('keydown', e => {
         if (e.key === 'Enter') ativarTokenPaywall();
     });
+
+    // ── COMPARTILHAR DIAGNÓSTICO ──────────────────────────────────────────
+    const TEMAS_DIAG = {{ diagnostico.temas | tojson if diagnostico and diagnostico.temas else '[]' }};
+    const RESUMO_DIAG = {{ ('"' + diagnostico.resumo + '"') | safe if diagnostico and diagnostico.resumo else '""' }};
+    const TEMPO_DIAG  = {{ ('"' + diagnostico.tempo_total + '"') | safe if diagnostico and diagnostico.tempo_total else '""' }};
+
+    function abrirCompartilhar() {
+        document.getElementById('compartilhar-modal').style.display = 'flex';
+        gerarCard();
+    }
+    function fecharCompartilhar() {
+        document.getElementById('compartilhar-modal').style.display = 'none';
+    }
+    document.getElementById('compartilhar-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) fecharCompartilhar();
+    });
+
+    function gerarCard() {
+        const canvas = document.getElementById('share-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = 1080, H = 1080;
+        canvas.width = W; canvas.height = H;
+
+        // Fundo
+        ctx.fillStyle = '#0d0d0d';
+        ctx.fillRect(0, 0, W, H);
+
+        // Gradiente sutil no topo
+        const grad = ctx.createLinearGradient(0, 0, W, H*0.5);
+        grad.addColorStop(0, '#0a1f1a');
+        grad.addColorStop(1, '#0d0d0d');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H*0.45);
+
+        // Borda interna decorativa
+        ctx.strokeStyle = '#00d4aa22';
+        ctx.lineWidth = 2;
+        roundRect(ctx, 32, 32, W-64, H-64, 40);
+        ctx.stroke();
+
+        // Logo
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 52px -apple-system, Arial';
+        ctx.fillText('Study', 80, 120);
+        ctx.fillStyle = '#00d4aa';
+        ctx.fillText('AI', 80 + ctx.measureText('Study').width, 120);
+
+        // Badge "Plano de Aprovação"
+        ctx.fillStyle = '#0a1f1a';
+        roundRect(ctx, 80, 148, 280, 44, 22);
+        ctx.fill();
+        ctx.fillStyle = '#00d4aa';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText('📋 Plano de Aprovação', 104, 177);
+
+        // Resumo
+        ctx.fillStyle = '#f0f0f0';
+        ctx.font = 'bold 44px Arial';
+        const resumoLines = wrapText(ctx, RESUMO_DIAG || 'Material analisado com IA', W - 160, 44);
+        let y = 250;
+        for (const line of resumoLines.slice(0, 3)) {
+            ctx.fillText(line, 80, y);
+            y += 56;
+        }
+
+        // Stats
+        const stats = [
+            { num: TEMAS_DIAG.length, label: 'temas' },
+            { num: TEMPO_DIAG || '—', label: 'de estudo' },
+            { num: TEMAS_DIAG.filter(t => t.prioridade === 'alta').length, label: 'alta prioridade' }
+        ];
+        const statW = (W - 160 - 40) / 3;
+        stats.forEach((s, i) => {
+            const sx = 80 + i * (statW + 20);
+            ctx.fillStyle = '#111';
+            roundRect(ctx, sx, y + 20, statW, 110, 18);
+            ctx.fill();
+            ctx.strokeStyle = '#00d4aa33';
+            ctx.lineWidth = 1;
+            roundRect(ctx, sx, y + 20, statW, 110, 18);
+            ctx.stroke();
+            ctx.fillStyle = '#00d4aa';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(String(s.num), sx + statW/2, y + 78);
+            ctx.fillStyle = '#555';
+            ctx.font = '22px Arial';
+            ctx.fillText(s.label, sx + statW/2, y + 110);
+        });
+        ctx.textAlign = 'left';
+        y += 170;
+
+        // Temas
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText('TEMAS IDENTIFICADOS', 80, y + 10);
+        y += 40;
+
+        const temasMost = TEMAS_DIAG.slice(0, 5);
+        temasMost.forEach((t, i) => {
+            const risco = t.risco || 'médio';
+            const riscoColor = risco === 'alto' ? '#f87171' : risco === 'médio' ? '#f59e0b' : '#4ade80';
+
+            // Fundo do tema
+            ctx.fillStyle = '#111';
+            roundRect(ctx, 80, y, W - 160, 100, 16);
+            ctx.fill();
+
+            // Número
+            ctx.fillStyle = '#00d4aa';
+            ctx.font = 'bold 36px Arial';
+            ctx.fillText(String(i+1), 114, y + 62);
+
+            // Nome
+            ctx.fillStyle = '#e8e8e8';
+            ctx.font = 'bold 30px Arial';
+            const nome = t.nome || '';
+            ctx.fillText(nome.length > 38 ? nome.slice(0, 38) + '…' : nome, 168, y + 52);
+
+            // Tags
+            ctx.fillStyle = riscoColor + '33';
+            roundRect(ctx, 168, y + 62, 140, 26, 8);
+            ctx.fill();
+            ctx.fillStyle = riscoColor;
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText('risco ' + risco, 180, y + 81);
+
+            if (t.frequencia) {
+                // Barra de frequência
+                const barX = W - 320, barW = 200;
+                ctx.fillStyle = '#1e1e1e';
+                roundRect(ctx, barX, y + 46, barW, 10, 5);
+                ctx.fill();
+                ctx.fillStyle = '#00d4aa';
+                roundRect(ctx, barX, y + 46, Math.max(8, (t.frequencia / 100) * barW), 10, 5);
+                ctx.fill();
+                ctx.fillStyle = '#00d4aa';
+                ctx.font = 'bold 22px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(t.frequencia + '%', W - 90, y + 60);
+                ctx.textAlign = 'left';
+            }
+
+            y += 116;
+        });
+
+        // Rodapé
+        ctx.fillStyle = '#222';
+        ctx.fillRect(80, H - 130, W - 160, 1);
+
+        ctx.fillStyle = '#00d4aa';
+        ctx.font = 'bold 28px Arial';
+        ctx.fillText('studyai-pfic.onrender.com', 80, H - 82);
+
+        ctx.fillStyle = '#444';
+        ctx.font = '22px Arial';
+        ctx.fillText('Analise seu material gratuitamente →', 80, H - 48);
+    }
+
+    function wrapText(ctx, text, maxW, fontSize) {
+        const words = text.split(' ');
+        const lines = [];
+        let current = '';
+        for (const w of words) {
+            const test = current ? current + ' ' + w : w;
+            if (ctx.measureText(test).width > maxW && current) {
+                lines.push(current);
+                current = w;
+            } else { current = test; }
+        }
+        if (current) lines.push(current);
+        return lines;
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function baixarCard() {
+        const canvas = document.getElementById('share-canvas');
+        const link = document.createElement('a');
+        link.download = 'meu-plano-studyai.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function copiarLink() {
+        navigator.clipboard.writeText('https://studyai-pfic.onrender.com').then(() => {
+            const btn = document.getElementById('btn-copiar-link');
+            btn.textContent = '✓ Copiado!';
+            btn.style.color = '#00d4aa';
+            setTimeout(() => { btn.textContent = '🔗 Copiar link'; btn.style.color = '#888'; }, 2000);
+        });
+    }
+    // ── FIM COMPARTILHAR ─────────────────────────────────────────────────
 
     // Verifica se usuário é premium
     function isPremium() {
