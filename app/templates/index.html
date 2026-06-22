@@ -345,6 +345,225 @@
         /* DIVIDER */
         .divider { height: 1px; background: #1a1a1a; margin: 40px 0; }
 
+        /* ── PLANO DE APROVAÇÃO ── */
+
+        /* Header do plano */
+        .plano-header {
+            background: linear-gradient(135deg, #0a1f1a 0%, #0d0d0d 60%);
+            border: 1px solid #00d4aa22;
+            border-radius: 20px;
+            padding: 28px 28px 24px;
+            margin-bottom: 20px;
+        }
+        .plano-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #00d4aa;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+        }
+        .plano-titulo {
+            font-size: 22px;
+            font-weight: 900;
+            color: #f0f0f0;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+        .plano-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .plano-stat { display: flex; flex-direction: column; gap: 2px; }
+        .plano-stat-num { font-size: 22px; font-weight: 900; color: #00d4aa; line-height: 1; }
+        .plano-stat-label { font-size: 11px; color: #444; font-weight: 600; }
+
+        /* Próxima ação */
+        .proxima-acao {
+            background: #111;
+            border: 1px solid #00d4aa33;
+            border-left: 4px solid #00d4aa;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .proxima-acao-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .proxima-acao-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #00d4aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .proxima-acao-tema {
+            font-size: 17px;
+            font-weight: 800;
+            color: #f0f0f0;
+            margin-bottom: 4px;
+        }
+        .proxima-acao-motivo { font-size: 13px; color: #666; line-height: 1.5; }
+        .proxima-acao-duracao {
+            margin-left: auto;
+            flex-shrink: 0;
+            background: #0a1f1a;
+            border: 1px solid #00d4aa22;
+            color: #00d4aa;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+
+        /* Mapa de risco */
+        .mapa-risco {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+        }
+        .mapa-risco-titulo {
+            font-size: 11px;
+            font-weight: 800;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+        }
+        .risco-items { display: flex; flex-direction: column; gap: 8px; }
+        .risco-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #161616;
+        }
+        .risco-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .risco-alto .risco-dot   { background: #f87171; box-shadow: 0 0 6px #f8717155; }
+        .risco-medio .risco-dot  { background: #f59e0b; box-shadow: 0 0 6px #f59e0b55; }
+        .risco-baixo .risco-dot  { background: #4ade80; }
+
+        .risco-nome { font-size: 13px; font-weight: 600; flex: 1; }
+        .risco-erro { font-size: 11px; color: #444; flex: 2; line-height: 1.4; }
+        .risco-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        .risco-alto  .risco-badge { background: #2e1a1a; color: #f87171; }
+        .risco-medio .risco-badge { background: #1f1a0a; color: #f59e0b; }
+        .risco-baixo .risco-badge { background: #1a2e1a; color: #4ade80; }
+
+        /* Progresso atual (da localStorage) */
+        .progresso-atual {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+        }
+        .prog-titulo {
+            font-size: 11px; font-weight: 800; color: #444;
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;
+        }
+        .prog-barra-geral {
+            height: 8px; background: #1e1e1e; border-radius: 4px;
+            overflow: hidden; margin-bottom: 8px;
+        }
+        .prog-barra-fill { height: 100%; background: #00d4aa; border-radius: 4px; transition: width 1s ease; }
+        .prog-meta { display: flex; justify-content: space-between; font-size: 11px; color: #444; }
+
+        /* Ordem visual */
+        .ordem-visual {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+        }
+        .ordem-visual-titulo {
+            font-size: 11px; font-weight: 800; color: #444;
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px;
+        }
+        .ordem-flow {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .ordem-item {
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ordem-item:first-child { border-color: #00d4aa44; color: #00d4aa; background: #0a1f1a; }
+        .ordem-arrow { color: #333; font-size: 14px; flex-shrink: 0; }
+
+        /* Lock premium */
+        .premium-lock {
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-lock::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 30%, #0d0d0d 90%);
+            pointer-events: none;
+        }
+        .premium-lock-cta {
+            text-align: center;
+            padding: 16px;
+            background: #111;
+            border-top: 1px solid #1a1a1a;
+            position: relative;
+            z-index: 2;
+        }
+        .premium-lock-cta a {
+            color: #00d4aa;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* Seção vídeos reframeada */
+        .videos-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .videos-titulo {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e8e8e8;
+        }
+        .videos-sub { font-size: 12px; color: #444; margin-top: 2px; }
+
         /* ── DIAGNÓSTICO ── */
         .diagnostico-header {
             display: flex;
@@ -1193,19 +1412,100 @@
     {% if diagnostico %}
     <div class="divider"></div>
 
-    <!-- DIAGNÓSTICO -->
-    <div class="diagnostico-header">
-        <div class="diagnostico-title">📊 Diagnóstico do Material</div>
-        <span class="diagnostico-badge">{{ diagnostico.temas | length }} temas</span>
+    <!-- HEADER DO PLANO -->
+    <div class="plano-header">
+        <div class="plano-label">📋 Plano de aprovação</div>
+        <div class="plano-titulo">{{ diagnostico.resumo or 'Seu material foi analisado' }}</div>
+        <div class="plano-stats">
+            <div class="plano-stat">
+                <span class="plano-stat-num">{{ diagnostico.temas | length }}</span>
+                <span class="plano-stat-label">temas identificados</span>
+            </div>
+            {% if diagnostico.tempo_total %}
+            <div class="plano-stat">
+                <span class="plano-stat-num">{{ diagnostico.tempo_total }}</span>
+                <span class="plano-stat-label">de estudo estimado</span>
+            </div>
+            {% endif %}
+            <div class="plano-stat">
+                <span class="plano-stat-num" id="stat-dominio">0%</span>
+                <span class="plano-stat-label">domínio atual</span>
+            </div>
+        </div>
     </div>
 
-    {% if diagnostico.resumo %}
-    <div class="resumo-box">
-        <strong>Foco:</strong> {{ diagnostico.resumo }}
+    <!-- PRÓXIMA AÇÃO -->
+    {% if diagnostico.proxima_acao %}
+    <div class="proxima-acao">
+        <div class="proxima-acao-icon">🎯</div>
+        <div style="flex:1;">
+            <div class="proxima-acao-label">Comece agora</div>
+            <div class="proxima-acao-tema">{{ diagnostico.proxima_acao.tema }}</div>
+            <div class="proxima-acao-motivo">{{ diagnostico.proxima_acao.motivo }}</div>
+        </div>
+        {% if diagnostico.proxima_acao.duracao %}
+        <div class="proxima-acao-duracao">⏱ {{ diagnostico.proxima_acao.duracao }}</div>
+        {% endif %}
     </div>
     {% endif %}
 
-    <!-- TEMAS -->
+    <!-- PROGRESSO ATUAL (calculado do localStorage via JS) -->
+    <div class="progresso-atual" id="progresso-atual-box" style="display:none">
+        <div class="prog-titulo">📈 Seu domínio atual neste material</div>
+        <div class="prog-barra-geral">
+            <div class="prog-barra-fill" id="prog-barra-fill" style="width:0%"></div>
+        </div>
+        <div class="prog-meta">
+            <span id="prog-temas-ok">0 temas estudados</span>
+            <span id="prog-pct-txt">0% de domínio médio</span>
+        </div>
+    </div>
+
+    <!-- MAPA DE RISCO -->
+    {% set temas_com_risco = diagnostico.temas | selectattr('risco', 'defined') | list %}
+    {% if temas_com_risco %}
+    <div class="mapa-risco">
+        <div class="mapa-risco-titulo">⚠️ Mapa de risco — onde você pode errar</div>
+        <div class="risco-items">
+            {% for tema in diagnostico.temas %}
+            <div class="risco-item risco-{{ tema.risco | default('medio') | replace('é', 'e') | lower }}">
+                <div class="risco-dot"></div>
+                <span class="risco-nome">{{ tema.nome }}</span>
+                <span class="risco-erro">{{ tema.erro_comum or '—' }}</span>
+                <span class="risco-badge">
+                    {% if tema.risco == 'alto' %}🔴 Alto risco
+                    {% elif tema.risco in ['médio', 'medio'] %}🟡 Médio
+                    {% else %}🟢 Baixo{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ORDEM IDEAL -->
+    {% if diagnostico.ordem_recomendada %}
+    <div class="ordem-visual">
+        <div class="ordem-visual-titulo">🗺 Ordem ideal de estudo</div>
+        <div class="ordem-flow">
+            {% for item in diagnostico.ordem_recomendada %}
+            <div class="ordem-item">
+                <span>{{ loop.index }}</span> {{ item }}
+            </div>
+            {% if not loop.last %}<span class="ordem-arrow">→</span>{% endif %}
+            {% endfor %}
+        </div>
+        {% if diagnostico.dependencias %}
+        <div style="margin-top:12px;">
+            {% for dep in diagnostico.dependencias %}
+            <div style="font-size:11px;color:#444;padding:4px 0;border-top:1px solid #1a1a1a;">→ {{ dep }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- TEMAS DETALHADOS -->
     <div class="temas-grid">
         {% for tema in diagnostico.temas %}
         <div class="tema-card prioridade-{{ tema.prioridade | replace('é', 'e') | lower }}">
@@ -1213,17 +1513,19 @@
             <div class="tema-info">
                 <div class="tema-nome">{{ tema.nome }}</div>
                 <div class="tema-meta">
-                    <span class="nivel-badge nivel-{{ tema.nivel | replace('é', 'e') | replace('ê', 'e') | lower | replace('intermediario', 'intermediario') | replace('intermediário', 'intermediario') | replace('básico', 'basico') | replace('avançado', 'avancado') }}">
+                    <span class="nivel-badge nivel-{{ 'basico' if tema.nivel == 'básico' else ('intermediario' if 'ntermed' in tema.nivel else 'avancado') }}">
                         {% if tema.nivel == 'básico' %}Básico
-                        {% elif tema.nivel in ['intermediário', 'intermediario'] %}Intermediário
-                        {% elif tema.nivel in ['avançado', 'avancado'] %}Avançado
-                        {% else %}{{ tema.nivel }}{% endif %}
+                        {% elif 'ntermed' in tema.nivel %}Intermediário
+                        {% else %}Avançado{% endif %}
                     </span>
                     <span class="prioridade-pill {% if tema.prioridade == 'alta' %}prio-alta{% elif tema.prioridade in ['média', 'media'] %}prio-media{% else %}prio-baixa{% endif %}">
                         {% if tema.prioridade == 'alta' %}🔴 Alta
                         {% elif tema.prioridade in ['média', 'media'] %}🟡 Média
                         {% else %}⚪ Baixa{% endif %}
                     </span>
+                    {% if tema.tempo_estimado %}
+                    <span style="font-size:11px;color:#333;">⏱ {{ tema.tempo_estimado }}</span>
+                    {% endif %}
                 </div>
             </div>
             <div class="freq-wrapper">
@@ -1234,34 +1536,6 @@
             </div>
         </div>
         {% endfor %}
-    </div>
-
-    <!-- TRILHA + DEPENDÊNCIAS -->
-    <div class="info-section">
-        {% if diagnostico.ordem_recomendada %}
-        <div class="info-card">
-            <div class="info-card-title">🗺 Ordem de Estudo</div>
-            <ul class="ordem-list">
-                {% for item in diagnostico.ordem_recomendada %}
-                <li>
-                    <span class="ordem-num">{{ loop.index }}</span>
-                    {{ item }}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        {% if diagnostico.dependencias %}
-        <div class="info-card">
-            <div class="info-card-title">🔗 Dependências</div>
-            <ul class="dep-list">
-                {% for dep in diagnostico.dependencias %}
-                <li>{{ dep }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
     </div>
 
     {% endif %}
@@ -1296,8 +1570,11 @@
     <!-- VÍDEOS -->
     {% if videos %}
     <div class="results-title">
-        <span>Vídeos recomendados</span>
-        <span class="results-count">{{ videos|length }} vídeos</span>
+        <div>
+            <div class="videos-titulo">🎬 Aulas selecionadas para você</div>
+            <div class="videos-sub">Rankeadas por relevância para o seu material</div>
+        </div>
+        <span class="results-count">{{ videos|length }} aulas</span>
     </div>
     {% for video in videos %}
     <div class="video-card">
@@ -1612,6 +1889,25 @@
             const novoStreak = dados.ultima === ontem.toDateString() ? (dados.streak || 0) + 1 : 1;
             localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: novoStreak, ultima: hoje }));
         }
+    })();
+    {% endif %}
+
+    // Calcula progresso atual dos temas do diagnóstico
+    {% if diagnostico and diagnostico.temas %}
+    (function() {
+        const perfil = getPerfil();
+        const temas = {{ diagnostico.temas | map(attribute='nome') | list | tojson }};
+        const dominios = temas.map(t => perfil.temas[t]?.dominio || 0);
+        const media = dominios.length ? Math.round(dominios.reduce((a,b) => a+b, 0) / dominios.length) : 0;
+        const estudados = dominios.filter(d => d > 0).length;
+
+        if (estudados > 0) {
+            document.getElementById('progresso-atual-box').style.display = 'block';
+            document.getElementById('prog-barra-fill').style.width = media + '%';
+            document.getElementById('prog-temas-ok').textContent = estudados + ' de ' + temas.length + ' temas estudados';
+            document.getElementById('prog-pct-txt').textContent = media + '% de domínio médio';
+        }
+        document.getElementById('stat-dominio').textContent = media + '%';
     })();
     {% endif %}
 

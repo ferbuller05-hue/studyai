@@ -77,10 +77,12 @@ def diagnosticar_material_imagem(arquivo_bytes: bytes, tipo_mime: str) -> dict:
     imagem_b64 = base64.standard_b64encode(arquivo_bytes).decode("utf-8")
 
     prompt_json = """{
-  "temas": [{"nome": "...", "frequencia": 35, "nivel": "básico|intermediário|avançado", "prioridade": "alta|média|baixa"}],
+  "temas": [{"nome": "...", "frequencia": 35, "nivel": "básico|intermediário|avançado", "prioridade": "alta|média|baixa", "risco": "alto|médio|baixo", "tempo_estimado": "1h", "erro_comum": "erro típico"}],
   "ordem_recomendada": ["tema1", "tema2"],
   "dependencias": ["Para estudar X, precisa entender Y primeiro"],
-  "resumo": "Uma frase resumindo o foco do material"
+  "resumo": "Uma frase resumindo o foco do material",
+  "tempo_total": "5h",
+  "proxima_acao": {"tema": "tema1", "motivo": "por que começar aqui", "duracao": "45min"}
 }"""
 
     resposta = client.messages.create(
@@ -150,17 +152,27 @@ Retorne APENAS um JSON válido neste formato exato:
       "nome": "Nome do tema",
       "frequencia": 35,
       "nivel": "básico|intermediário|avançado",
-      "prioridade": "alta|média|baixa"
+      "prioridade": "alta|média|baixa",
+      "risco": "alto|médio|baixo",
+      "tempo_estimado": "1h30min",
+      "erro_comum": "Erro ou confusão típica dos alunos neste tema"
     }}
   ],
   "ordem_recomendada": ["tema1", "tema2", "tema3"],
   "dependencias": ["Para estudar X, precisa entender Y primeiro"],
-  "resumo": "Uma frase resumindo o foco principal do material"
+  "resumo": "Uma frase resumindo o foco principal do material",
+  "tempo_total": "6h",
+  "proxima_acao": {{
+    "tema": "Nome do tema para começar agora",
+    "motivo": "Por que começar por este tema",
+    "duracao": "45min"
+  }}
 }}
 
 Regras:
 - Máximo 8 temas
 - frequencia deve somar 100 entre todos os temas
+- risco = probabilidade do tema cair na prova/ser cobrado
 - Ordene os temas por prioridade (alta primeiro)
 - Retorne APENAS o JSON, sem texto adicional"""
             }
