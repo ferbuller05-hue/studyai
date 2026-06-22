@@ -3062,10 +3062,18 @@
     }
 
     function abrirOnboarding() {
-        // Define data mínima como amanhã
         const amanha = new Date();
         amanha.setDate(amanha.getDate() + 1);
         document.getElementById('ob-data-prova').min = amanha.toISOString().split('T')[0];
+
+        // Pré-preenche com dados salvos (edição)
+        const ob = JSON.parse(localStorage.getItem(OB_KEY) || '{}');
+        if (ob.data_prova) document.getElementById('ob-data-prova').value = ob.data_prova;
+        if (ob.horas_por_dia) {
+            document.getElementById('ob-horas-slider').value = ob.horas_por_dia;
+            atualizarHoras(ob.horas_por_dia);
+        }
+
         document.getElementById('onboarding-modal').classList.add('open');
     }
 
@@ -3087,16 +3095,27 @@
         ob.session_id    = sid;
         localStorage.setItem(OB_KEY, JSON.stringify(ob));
 
-        // Envia ao backend (PATCH — campos parciais)
+        // Envia ao backend: PATCH se perfil existe, POST se não existe
         try {
-            await fetch('/onboarding/' + sid, {
+            const resPatch = await fetch('/onboarding/' + sid, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    data_prova:    dataInput || null,
-                    horas_por_dia: horas
-                })
+                body: JSON.stringify({ data_prova: dataInput || null, horas_por_dia: horas })
             });
+            if (resPatch.status === 404) {
+                await fetch('/onboarding/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sid,
+                        objetivo: 'outro',
+                        tipo_prova: 'Não informado',
+                        data_prova: dataInput || null,
+                        horas_por_dia: horas,
+                        materias_dificuldade: []
+                    })
+                });
+            }
         } catch (_) { /* silencioso — dados já salvos em localStorage */ }
 
         localStorage.setItem(OB_STEP, '2');
@@ -3108,6 +3127,28 @@
     const OB_MATERIAS_SEL = new Set(); // matérias selecionadas nesta sessão
 
     function abrirPasso3() {
+        // Pré-seleciona matérias salvas (edição)
+        const ob = JSON.parse(localStorage.getItem(OB_KEY) || '{}');
+        const salvas = (ob.materias_dificuldade || []).map(m => m.materia || m);
+        if (salvas.length > 0) {
+            OB_MATERIAS_SEL.clear();
+            document.querySelectorAll('#ob-materia-grid .ob-chip').forEach(c => c.classList.remove('selected'));
+            salvas.forEach(nome => {
+                OB_MATERIAS_SEL.add(nome);
+                let encontrado = false;
+                document.querySelectorAll('#ob-materia-grid .ob-chip').forEach(c => {
+                    if (c.textContent.trim() === nome) { c.classList.add('selected'); encontrado = true; }
+                });
+                if (!encontrado) {
+                    const chip = document.createElement('div');
+                    chip.className = 'ob-chip selected';
+                    chip.textContent = nome;
+                    chip.onclick = function() { toggleMateria(chip, nome); };
+                    document.getElementById('ob-materia-grid').appendChild(chip);
+                }
+            });
+            atualizarContador();
+        }
         document.getElementById('onboarding-modal-3').classList.add('open');
     }
 
@@ -3175,8 +3216,35 @@
     }
     // ── FIM ONBOARDING PASSO 3 ──────────────────────────────────────────────
 
+    // Carrega perfil do backend e sincroniza com localStorage
+    async function carregarPerfilOnboarding() {
+        const sid = getSessionId();
+        try {
+            const res = await fetch('/onboarding/' + sid);
+            if (!res.ok) return; // 404 = sem perfil ainda, tudo bem
+            const data = await res.json();
+            // Sobrescreve localStorage com dados do servidor (fonte da verdade)
+            const ob = JSON.parse(localStorage.getItem(OB_KEY) || '{}');
+            Object.assign(ob, {
+                session_id:           data.session_id,
+                data_prova:           data.data_prova || ob.data_prova || null,
+                horas_por_dia:        data.horas_por_dia,
+                materias_dificuldade: data.materias_dificuldade || []
+            });
+            localStorage.setItem(OB_KEY, JSON.stringify(ob));
+            // Atualiza passo concluído
+            const stepAtual = parseInt(localStorage.getItem(OB_STEP) || '0');
+            if (data.materias_dificuldade && data.materias_dificuldade.length > 0) {
+                if (stepAtual < 3) localStorage.setItem(OB_STEP, '3');
+            } else if (data.horas_por_dia && stepAtual < 2) {
+                localStorage.setItem(OB_STEP, '2');
+            }
+        } catch (_) { /* offline ou erro — continua com localStorage */ }
+    }
+
     // Abre o modal automaticamente no passo correto
-    (function() {
+    (async function() {
+        await carregarPerfilOnboarding();
         const stepConcluido = parseInt(localStorage.getItem(OB_STEP) || '0');
         const pulado        = sessionStorage.getItem('ob_pulado');
         if (pulado) return;
