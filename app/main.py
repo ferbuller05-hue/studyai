@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from app.extractor import processar_arquivo, extrair_topicos_do_prompt, diagnosticar_material, diagnosticar_material_imagem, extrair_texto_pdf, extrair_topicos_da_imagem, gerar_estrutura_trilha
 from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha
 from app.chat import responder
+from app.feedback import analisar_feedback
 import base64
 
 app = FastAPI(title="StudyAI", version="0.4.0")
@@ -102,6 +103,21 @@ async def chat(request: Request):
 
     resposta = responder(mensagem, historico, topicos)
     return JSONResponse({"resposta": resposta})
+
+
+@app.post("/feedback")
+async def feedback(request: Request):
+    data = await request.json()
+    resultado = analisar_feedback(
+        tema=data.get("tema", ""),
+        video_titulo=data.get("video_titulo", ""),
+        entendimento=int(data.get("entendimento", 70)),
+        dificuldade=data.get("dificuldade", "médio"),
+        comentario=data.get("comentario", ""),
+        dominio_atual=int(data.get("dominio_atual", 0)),
+        historico_erros=data.get("historico_erros", [])
+    )
+    return JSONResponse(resultado)
 
 
 @app.get("/health")

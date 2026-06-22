@@ -626,12 +626,243 @@
         .chat-send:hover { background: #00bfa0; }
         .chat-send svg { width: 16px; height: 16px; color: #0d0d0d; }
 
+        /* FEEDBACK BUTTON */
+        .btn-avaliar {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: transparent;
+            color: #444;
+            border: 1px solid #222;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        .btn-avaliar:hover { border-color: #00d4aa44; color: #00d4aa; }
+        .btn-avaliar.avaliado { border-color: #00d4aa33; color: #00d4aa; background: #0a1f1a; }
+
+        /* DOMÍNIO BADGE NO CARD */
+        .dominio-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #333;
+        }
+
+        /* MODAL FEEDBACK */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 20px;
+            padding: 28px;
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+        }
+        .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+        .modal-sub { font-size: 13px; color: #555; margin-bottom: 24px; }
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: none; border: none;
+            color: #444; font-size: 20px; cursor: pointer;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .field-group { margin-bottom: 20px; }
+
+        /* SLIDER ENTENDIMENTO */
+        .slider-wrapper { display: flex; align-items: center; gap: 12px; }
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px; height: 18px;
+            background: #00d4aa;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .slider-val {
+            font-size: 18px;
+            font-weight: 800;
+            color: #00d4aa;
+            min-width: 48px;
+            text-align: right;
+        }
+
+        /* DIFICULDADE PILLS */
+        .pills { display: flex; gap: 8px; }
+        .pill {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #222;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.2s;
+        }
+        .pill.selected-facil  { border-color: #4ade8044; background: #1a2e1a; color: #4ade80; }
+        .pill.selected-medio  { border-color: #f59e0b44; background: #2e2a1a; color: #f59e0b; }
+        .pill.selected-dificil { border-color: #f8717144; background: #2e1a1a; color: #f87171; }
+
+        /* COMENTÁRIO */
+        .comentario-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            font-family: inherit;
+            color: #e8e8e8;
+            outline: none;
+            resize: none;
+            height: 60px;
+        }
+        .comentario-input:focus { border-color: #00d4aa33; }
+        .comentario-input::placeholder { color: #333; }
+
+        /* SUBMIT */
+        .btn-feedback-submit {
+            width: 100%;
+            background: #00d4aa;
+            color: #0d0d0d;
+            border: none;
+            padding: 13px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+        .btn-feedback-submit:hover { background: #00bfa0; }
+        .btn-feedback-submit:disabled { background: #1e1e1e; color: #444; cursor: not-allowed; }
+
+        /* RESULTADO DO FEEDBACK */
+        .feedback-result {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .feedback-result.show { display: flex; }
+        .result-dominio {
+            text-align: center;
+            padding: 20px;
+        }
+        .result-dominio-num {
+            font-size: 52px;
+            font-weight: 900;
+            color: #00d4aa;
+            line-height: 1;
+        }
+        .result-dominio-label { font-size: 13px; color: #555; margin-top: 4px; }
+        .result-item { background: #1a1a1a; border-radius: 10px; padding: 12px 14px; }
+        .result-item-label { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px; font-weight: 700; }
+        .result-item-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+        .result-mensagem {
+            background: #0a1f1a;
+            border: 1px solid #00d4aa22;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 14px;
+            color: #00d4aa;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* PAINEL PROGRESSO */
+        .progresso-btn {
+            position: fixed;
+            bottom: 96px;
+            left: 28px;
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 14px;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.2s;
+            display: none;
+        }
+        .progresso-btn.visible { display: block; }
+        .progresso-btn:hover { border-color: #00d4aa44; color: #00d4aa; }
+
+        .progresso-panel {
+            position: fixed;
+            bottom: 136px;
+            left: 28px;
+            width: 280px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 18px;
+            padding: 20px;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+        .progresso-panel.open { display: block; }
+        .progresso-panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8e8e8;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .progresso-close { background: none; border: none; color: #444; font-size: 16px; cursor: pointer; }
+        .progresso-tema { margin-bottom: 14px; }
+        .progresso-tema-nome { font-size: 12px; color: #ccc; margin-bottom: 5px; font-weight: 600; }
+        .progresso-bar-bg { height: 6px; background: #1e1e1e; border-radius: 3px; overflow: hidden; }
+        .progresso-bar-fill { height: 100%; background: #00d4aa; border-radius: 3px; transition: width 0.6s ease; }
+        .progresso-pct { font-size: 11px; color: #444; margin-top: 3px; }
+
         @media (max-width: 600px) {
             .header { padding: 32px 20px 24px; }
             .video-card { flex-direction: column; }
             .video-card img { width: 100%; min-width: unset; height: 170px; }
             .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 88px; }
             .chat-btn { right: 16px; bottom: 16px; }
+            .progresso-btn { left: 16px; }
+            .progresso-panel { left: 16px; width: calc(100vw - 32px); }
         }
     </style>
 </head>
@@ -812,7 +1043,13 @@
             {% if video.motivo %}
             <p class="video-motivo">"{{ video.motivo }}"</p>
             {% endif %}
-            <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ YouTube</a>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ YouTube</a>
+                <button class="btn-avaliar" onclick="abrirFeedback('{{ video.topico }}', '{{ video.titulo | replace("'", "") }}', {{ video.score or 0 }})">
+                    ✏️ Avaliar
+                </button>
+                <span class="dominio-badge" id="dominio-{{ loop.index }}"></span>
+            </div>
         </div>
     </div>
     {% endfor %}
@@ -840,6 +1077,79 @@
         <button class="chat-send" onclick="enviarMensagem()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
+    </div>
+</div>
+
+<!-- PAINEL PROGRESSO -->
+<button class="progresso-btn" id="progresso-btn" onclick="toggleProgresso()">📊 Meu Progresso</button>
+<div class="progresso-panel" id="progresso-panel">
+    <div class="progresso-panel-title">
+        📊 Meu Progresso
+        <button class="progresso-close" onclick="toggleProgresso()">×</button>
+    </div>
+    <div id="progresso-temas"></div>
+</div>
+
+<!-- MODAL FEEDBACK -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal">
+        <button class="modal-close" onclick="fecharFeedback()">×</button>
+
+        <!-- FORMULÁRIO -->
+        <div id="feedback-form-area">
+            <div class="modal-title">Como foi essa aula?</div>
+            <div class="modal-sub" id="feedback-video-nome">Avalie seu entendimento</div>
+
+            <div class="field-group">
+                <span class="field-label">Nível de entendimento</span>
+                <div class="slider-wrapper">
+                    <input type="range" id="slider-entendimento" min="0" max="100" value="70"
+                        oninput="document.getElementById('slider-val').textContent = this.value + '%'">
+                    <span class="slider-val" id="slider-val">70%</span>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <span class="field-label">Dificuldade percebida</span>
+                <div class="pills">
+                    <div class="pill" id="pill-facil" onclick="selecionarDificuldade('fácil')">😊 Fácil</div>
+                    <div class="pill selected-medio" id="pill-medio" onclick="selecionarDificuldade('médio')">🤔 Médio</div>
+                    <div class="pill" id="pill-dificil" onclick="selecionarDificuldade('difícil')">😤 Difícil</div>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <span class="field-label">Comentário (opcional)</span>
+                <textarea class="comentario-input" id="feedback-comentario"
+                    placeholder="O que ficou confuso? O que ficou claro?"></textarea>
+            </div>
+
+            <button class="btn-feedback-submit" id="btn-submit-feedback" onclick="enviarFeedback()">
+                Analisar meu progresso
+            </button>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="feedback-result" id="feedback-result">
+            <div class="result-dominio">
+                <div class="result-dominio-num" id="result-dominio-num">0%</div>
+                <div class="result-dominio-label">Domínio no tema</div>
+            </div>
+            <div class="result-mensagem" id="result-mensagem"></div>
+            <div class="result-item">
+                <div class="result-item-label">✅ O que funcionou</div>
+                <div class="result-item-text" id="result-funcionou"></div>
+            </div>
+            <div class="result-item">
+                <div class="result-item-label">⚠️ Onde teve dificuldade</div>
+                <div class="result-item-text" id="result-nao-funcionou"></div>
+            </div>
+            <div class="result-item">
+                <div class="result-item-label">➡️ Próximo passo</div>
+                <div class="result-item-text" id="result-proximo"></div>
+            </div>
+            <button class="btn-feedback-submit" onclick="fecharFeedback()">Fechar</button>
+        </div>
     </div>
 </div>
 
@@ -937,6 +1247,138 @@
         msgs.appendChild(div);
         msgs.scrollTop = msgs.scrollHeight;
         return div;
+    }
+
+    // ── PERFIL DO ALUNO (localStorage) ──
+    const PERFIL_KEY = 'studyai_perfil';
+
+    function getPerfil() {
+        try { return JSON.parse(localStorage.getItem(PERFIL_KEY)) || { temas: {} }; }
+        catch { return { temas: {} }; }
+    }
+
+    function salvarPerfil(perfil) {
+        localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
+    }
+
+    function getDominio(tema) {
+        return getPerfil().temas[tema]?.dominio || 0;
+    }
+
+    function atualizarPainel() {
+        const perfil = getPerfil();
+        const temas = Object.keys(perfil.temas);
+        const btn = document.getElementById('progresso-btn');
+        const container = document.getElementById('progresso-temas');
+        if (!temas.length) return;
+        btn.classList.add('visible');
+        container.innerHTML = temas.map(tema => {
+            const d = perfil.temas[tema].dominio || 0;
+            return `<div class="progresso-tema">
+                <div class="progresso-tema-nome">${tema}</div>
+                <div class="progresso-bar-bg">
+                    <div class="progresso-bar-fill" style="width:${d}%"></div>
+                </div>
+                <div class="progresso-pct">${d}% de domínio</div>
+            </div>`;
+        }).join('');
+    }
+
+    // Chama ao carregar
+    atualizarPainel();
+
+    let progressoAberto = false;
+    function toggleProgresso() {
+        progressoAberto = !progressoAberto;
+        document.getElementById('progresso-panel').classList.toggle('open', progressoAberto);
+    }
+
+    // ── MODAL FEEDBACK ──
+    let feedbackTema = '';
+    let feedbackVideoTitulo = '';
+    let dificuldadeSelecionada = 'médio';
+
+    function abrirFeedback(tema, titulo, score) {
+        feedbackTema = tema;
+        feedbackVideoTitulo = titulo;
+        document.getElementById('feedback-video-nome').textContent = titulo;
+        document.getElementById('slider-entendimento').value = 70;
+        document.getElementById('slider-val').textContent = '70%';
+        document.getElementById('feedback-comentario').value = '';
+        document.getElementById('feedback-form-area').style.display = 'block';
+        document.getElementById('feedback-result').classList.remove('show');
+        document.getElementById('btn-submit-feedback').disabled = false;
+        document.getElementById('btn-submit-feedback').textContent = 'Analisar meu progresso';
+        selecionarDificuldade('médio');
+        document.getElementById('feedback-modal').classList.add('open');
+    }
+
+    function fecharFeedback() {
+        document.getElementById('feedback-modal').classList.remove('open');
+        atualizarPainel();
+    }
+
+    function selecionarDificuldade(val) {
+        dificuldadeSelecionada = val;
+        ['facil','medio','dificil'].forEach(p => {
+            document.getElementById('pill-' + p).className = 'pill';
+        });
+        const map = { 'fácil': 'facil', 'médio': 'medio', 'difícil': 'dificil' };
+        const key = map[val] || 'medio';
+        document.getElementById('pill-' + key).className = 'pill selected-' + key;
+    }
+
+    async function enviarFeedback() {
+        const btn = document.getElementById('btn-submit-feedback');
+        btn.disabled = true;
+        btn.textContent = 'Analisando...';
+
+        const entendimento = parseInt(document.getElementById('slider-entendimento').value);
+        const comentario = document.getElementById('feedback-comentario').value;
+        const perfil = getPerfil();
+        const dominio_atual = perfil.temas[feedbackTema]?.dominio || 0;
+        const historico_erros = perfil.temas[feedbackTema]?.padroes || [];
+
+        try {
+            const res = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tema: feedbackTema,
+                    video_titulo: feedbackVideoTitulo,
+                    entendimento,
+                    dificuldade: dificuldadeSelecionada,
+                    comentario,
+                    dominio_atual,
+                    historico_erros
+                })
+            });
+            const data = await res.json();
+
+            // Atualiza perfil
+            if (!perfil.temas[feedbackTema]) perfil.temas[feedbackTema] = { dominio: 0, padroes: [], sessoes: 0 };
+            perfil.temas[feedbackTema].dominio = data.novo_dominio;
+            perfil.temas[feedbackTema].sessoes = (perfil.temas[feedbackTema].sessoes || 0) + 1;
+            if (data.padroes?.length) {
+                perfil.temas[feedbackTema].padroes = [
+                    ...new Set([...(perfil.temas[feedbackTema].padroes || []), ...data.padroes])
+                ].slice(-10);
+            }
+            salvarPerfil(perfil);
+
+            // Mostra resultado
+            document.getElementById('feedback-form-area').style.display = 'none';
+            document.getElementById('result-dominio-num').textContent = data.novo_dominio + '%';
+            document.getElementById('result-mensagem').textContent = data.mensagem_aluno || '';
+            document.getElementById('result-funcionou').textContent = data.funcionou || '—';
+            document.getElementById('result-nao-funcionou').textContent = data.nao_funcionou || '—';
+            document.getElementById('result-proximo').textContent = data.proximo_passo || '—';
+            document.getElementById('feedback-result').classList.add('show');
+
+        } catch (e) {
+            btn.disabled = false;
+            btn.textContent = 'Tentar novamente';
+        }
     }
 
     if (inputFile) {
