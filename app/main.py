@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from app.extractor import processar_pdf
+from app.extractor import processar_arquivo
 from app.youtube import buscar_videos_por_topicos
 
 app = FastAPI(title="StudyAI", version="0.1.0")
@@ -17,7 +17,7 @@ async def home(request: Request):
 @app.post("/analisar", response_class=HTMLResponse)
 async def analisar(request: Request, arquivo: UploadFile = File(...)):
     conteudo = await arquivo.read()
-    topicos = processar_pdf(conteudo)
+    topicos = processar_arquivo(conteudo, arquivo.filename, arquivo.content_type or "")
     videos = buscar_videos_por_topicos(topicos)
     return templates.TemplateResponse("index.html", {
         "request": request,

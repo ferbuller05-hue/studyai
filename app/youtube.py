@@ -57,6 +57,5 @@ def buscar_videos_por_topicos(topicos: list[str]) -> list[dict]:
     for topico in topicos[:5]:
         videos = buscar_videos(topico)
         rankeados = rankear_videos(topico, videos)
-        if rankeados:
-            todos_videos.append(rankeados[0])
+        todos_videos.extend(rankeados[:2])  # 2 melhores vídeos por tópico
     return todos_videos
