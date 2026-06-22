@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from typing import Optional
+from fastapi.responses import HTMLResponse, JSONResponse
 from app.extractor import processar_arquivo, extrair_topicos_do_prompt
 from app.youtube import buscar_videos_por_topicos
+from app.chat import responder
+import json
 
-app = FastAPI(title="StudyAI", version="0.2.0")
+app = FastAPI(title="StudyAI", version="0.3.0")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
@@ -41,6 +42,17 @@ async def buscar(request: Request, prompt: str = Form(...)):
         "prompt": prompt,
         "modo": "texto"
     })
+
+
+@app.post("/chat")
+async def chat(request: Request):
+    data = await request.json()
+    mensagem = data.get("mensagem", "")
+    historico = data.get("historico", [])
+    topicos = data.get("topicos", [])
+
+    resposta = responder(mensagem, historico, topicos)
+    return JSONResponse({"resposta": resposta})
 
 
 @app.get("/health")
