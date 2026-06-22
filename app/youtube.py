@@ -77,16 +77,19 @@ Analise e retorne APENAS um JSON com os 3 melhores vídeos rankeados:
   {{
     "numero": 2,
     "score": 87,
-    "motivo": "Explica com exemplos práticos no nível certo",
+    "motivo": "Explica regra da cadeia com exemplos visuais, perfeito para quem está vendo pela primeira vez",
     "nivel_video": "intermediário",
     "tipo": "Conceito",
-    "cobertura": "Derivadas básicas e regra da cadeia",
-    "tempo_util": "18min"
+    "cobertura": "Derivadas básicas, regra da cadeia, derivada de funções compostas",
+    "tempo_util": "18min",
+    "timestamp": "2:30"
   }}
 ]
 
 Critérios de score (0-100): aderência ao tema, qualidade didática, nível adequado, profundidade.
-Tipos possíveis: Conceito | Exercício | Revisão
+Tipos: Conceito | Exercício | Revisão
+timestamp = minuto:segundo onde começa o conteúdo principal (pule intros longas).
+tempo_util = tempo real necessário para assistir o que importa.
 Retorne APENAS o JSON."""
         }]
     )
@@ -110,6 +113,7 @@ Retorne APENAS o JSON."""
                 video["tipo_video"] = r.get("tipo", "")
                 video["cobertura"] = r.get("cobertura", "")
                 video["tempo_util"] = r.get("tempo_util", "")
+                video["timestamp"] = r.get("timestamp", "")
                 resultado.append(video)
         return resultado if resultado else videos[:3]
     except Exception:
