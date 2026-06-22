@@ -71,6 +71,26 @@ Máximo 8 tópicos. Seja específico."""
     return topicos[:8]
 
 
+def extrair_topicos_do_prompt(prompt: str) -> list[str]:
+    resposta = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=300,
+        messages=[
+            {
+                "role": "user",
+                "content": f"""O estudante escreveu: "{prompt}"
+
+Extraia os tópicos de estudo que ele precisa aprender.
+Retorne APENAS uma lista de tópicos, um por linha, sem numeração ou bullets.
+Máximo 6 tópicos. Seja específico e técnico."""
+            }
+        ]
+    )
+    topicos_raw = resposta.content[0].text.strip()
+    topicos = [t.strip() for t in topicos_raw.split("\n") if t.strip()]
+    return topicos[:6]
+
+
 def processar_arquivo(arquivo_bytes: bytes, nome_arquivo: str, tipo_mime: str) -> list[str]:
     extensao = nome_arquivo.lower().split('.')[-1] if '.' in nome_arquivo else ''
 

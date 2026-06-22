@@ -6,156 +6,225 @@
     <title>StudyAI — Encontre os melhores vídeos para estudar</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
 
+        /* HEADER */
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: white;
-            padding: 40px 24px;
+            padding: 48px 24px 40px;
             text-align: center;
         }
-        .header h1 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
-        .header h1 span { color: #4fc3f7; }
-        .header p { color: #90caf9; font-size: 16px; }
+        .header .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #a78bfa;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .header h1 { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; }
+        .header h1 span { color: #818cf8; }
+        .header p { color: #94a3b8; font-size: 17px; max-width: 500px; margin: 0 auto; line-height: 1.6; }
 
-        .container { max-width: 820px; margin: 40px auto; padding: 0 20px; }
+        /* CONTAINER */
+        .container { max-width: 840px; margin: 0 auto; padding: 40px 20px 60px; }
 
-        .upload-box {
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 14px;
+            padding: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #302b63, #24243e);
+            color: white;
+            box-shadow: 0 2px 8px rgba(48,43,99,0.3);
+        }
+        .tab-btn:hover:not(.active) { background: #f1f5f9; color: #1a1a2e; }
+
+        /* CARDS */
+        .card {
             background: white;
             border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            display: none;
         }
-        .upload-box h2 { font-size: 22px; margin-bottom: 8px; color: #1a1a2e; }
-        .upload-box .subtitle { color: #888; margin-bottom: 28px; font-size: 15px; }
+        .card.active { display: block; }
 
-        .upload-area {
-            border: 2px dashed #cbd5e0;
+        /* PROMPT SECTION */
+        .prompt-label { font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 10px; display: block; }
+        .prompt-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .example-chip {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .example-chip:hover { background: #e0e7ff; border-color: #818cf8; color: #4338ca; }
+
+        textarea {
+            width: 100%;
+            border: 2px solid #e2e8f0;
             border-radius: 12px;
-            padding: 32px 20px;
-            margin-bottom: 20px;
+            padding: 16px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #1a1a2e;
+            resize: none;
+            height: 110px;
+            transition: border-color 0.2s;
+            outline: none;
+            line-height: 1.5;
+        }
+        textarea:focus { border-color: #818cf8; }
+        textarea::placeholder { color: #94a3b8; }
+
+        /* UPLOAD SECTION */
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 36px 20px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             background: #f8fafc;
+            margin-bottom: 16px;
         }
-        .upload-area:hover { border-color: #4fc3f7; background: #f0f9ff; }
-        .upload-area.dragover { border-color: #0f3460; background: #e8f4fd; }
-        .upload-icon { font-size: 40px; margin-bottom: 12px; }
-        .upload-area p { color: #666; font-size: 14px; }
+        .upload-area:hover { border-color: #818cf8; background: #f5f3ff; }
+        .upload-area.dragover { border-color: #302b63; background: #ede9fe; }
+        .upload-icon { font-size: 36px; margin-bottom: 10px; }
+        .upload-area p { color: #64748b; font-size: 14px; }
         .upload-area strong { color: #1a1a2e; }
-        .file-types { color: #aaa; font-size: 12px; margin-top: 6px; }
-
+        .upload-area .file-types { color: #94a3b8; font-size: 12px; margin-top: 4px; }
         input[type="file"] { display: none; }
 
         .file-selected {
             display: none;
             align-items: center;
             gap: 10px;
-            background: #f0f9ff;
-            border: 1px solid #bde0fe;
-            border-radius: 8px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
             padding: 12px 16px;
-            margin-bottom: 20px;
-            text-align: left;
+            margin-bottom: 16px;
         }
         .file-selected.visible { display: flex; }
-        .file-selected span { font-size: 14px; color: #1a1a2e; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-selected span:last-child { font-size: 14px; color: #166534; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .btn-analisar {
-            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        /* BUTTON */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #302b63, #24243e);
             color: white;
             border: none;
-            padding: 16px 40px;
-            border-radius: 10px;
+            padding: 16px;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            width: 100%;
-            transition: transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+            margin-top: 16px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(48,43,99,0.35);
+            letter-spacing: 0.3px;
         }
-        .btn-analisar:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(15,52,96,0.4); }
-        .btn-analisar:active { transform: translateY(0); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(48,43,99,0.45); }
+        .btn-primary:active { transform: translateY(0); }
 
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(26,26,46,0.85);
-            z-index: 100;
-            justify-content: center;
+        /* RESULTS */
+        .results-header {
+            display: flex;
             align-items: center;
-            flex-direction: column;
-            gap: 20px;
+            justify-content: space-between;
+            margin: 36px 0 20px;
         }
-        .loading-overlay.visible { display: flex; }
-        .spinner {
-            width: 52px; height: 52px;
-            border: 4px solid rgba(255,255,255,0.2);
-            border-top-color: #4fc3f7;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-overlay p { color: white; font-size: 18px; font-weight: 600; }
-        .loading-overlay small { color: #90caf9; font-size: 13px; }
+        .results-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+        .results-count { background: #ede9fe; color: #5b21b6; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
 
-        .topicos {
+        .topicos-box {
             background: white;
             border-radius: 16px;
-            padding: 28px;
-            margin-top: 32px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
         }
-        .topicos h2 { color: #1a1a2e; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .topicos-box h3 { font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
         .topico-tag {
             display: inline-block;
-            background: #e8f4fd;
-            color: #0f3460;
+            background: #ede9fe;
+            color: #5b21b6;
+            border: 1px solid #ddd6fe;
             padding: 6px 16px;
             border-radius: 20px;
             margin: 4px;
             font-size: 13px;
             font-weight: 500;
-            border: 1px solid #bde0fe;
         }
-
-        .videos { margin-top: 32px; }
-        .videos h2 { color: #1a1a2e; font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 
         .video-card {
             background: white;
             border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
             display: flex;
             gap: 16px;
             align-items: flex-start;
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: all 0.2s;
+            border: 1px solid #f1f5f9;
         }
-        .video-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .video-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); border-color: #e0e7ff; }
         .video-card img {
-            width: 160px;
-            min-width: 160px;
-            height: 90px;
+            width: 156px;
+            min-width: 156px;
+            height: 88px;
             border-radius: 10px;
             object-fit: cover;
         }
         .video-info { flex: 1; }
         .topico-label {
             display: inline-block;
-            background: #1a1a2e;
+            background: #302b63;
             color: white;
             padding: 3px 10px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 11px;
+            font-weight: 600;
             margin-bottom: 8px;
-            font-weight: 500;
+            letter-spacing: 0.3px;
         }
-        .video-info h3 { font-size: 15px; margin-bottom: 5px; line-height: 1.4; color: #1a1a2e; }
-        .video-info .canal { color: #888; font-size: 13px; margin-bottom: 12px; }
+        .video-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 5px; line-height: 1.4; color: #1a1a2e; }
+        .video-info .canal { color: #94a3b8; font-size: 13px; margin-bottom: 12px; }
         .btn-assistir {
             display: inline-flex;
             align-items: center;
@@ -166,93 +235,165 @@
             border-radius: 8px;
             text-decoration: none;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             transition: background 0.2s;
         }
         .btn-assistir:hover { background: #cc0000; }
 
+        /* LOADING */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,12,41,0.88);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .loading-overlay.visible { display: flex; }
+        .spinner {
+            width: 56px; height: 56px;
+            border: 4px solid rgba(255,255,255,0.15);
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay p { color: white; font-size: 18px; font-weight: 700; }
+        .loading-overlay small { color: #94a3b8; font-size: 13px; text-align: center; max-width: 280px; }
+
         @media (max-width: 600px) {
-            .header h1 { font-size: 26px; }
+            .header h1 { font-size: 30px; }
             .video-card { flex-direction: column; }
             .video-card img { width: 100%; min-width: unset; height: 180px; }
-            .upload-box { padding: 24px 16px; }
+            .card { padding: 20px 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Study<span>AI</span></h1>
-        <p>Mande sua prova ou foto do caderno — a IA encontra os melhores vídeos pra você estudar</p>
+
+<div class="header">
+    <div class="badge">✨ IA para estudantes</div>
+    <h1>Study<span>AI</span></h1>
+    <p>Mande sua prova, foto do caderno ou descreva o que precisa estudar — a IA encontra os melhores vídeos pra você</p>
+</div>
+
+<div class="container">
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn {% if modo != 'arquivo' %}active{% endif %}" onclick="trocarTab('texto')">
+            💬 Digitar o que preciso estudar
+        </button>
+        <button class="tab-btn {% if modo == 'arquivo' %}active{% endif %}" onclick="trocarTab('arquivo')">
+            📎 Enviar arquivo ou foto
+        </button>
     </div>
 
-    <div class="container">
-        <div class="upload-box">
-            <h2>Envie seu material de estudo</h2>
-            <p class="subtitle">PDF, foto de prova, simulado ou qualquer material</p>
-
-            <form action="/analisar" method="post" enctype="multipart/form-data" id="form-upload">
-                <input type="file" name="arquivo" id="arquivo" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
-
-                <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
-                    <div class="upload-icon">📄</div>
-                    <p><strong>Clique aqui</strong> ou arraste seu arquivo</p>
-                    <p class="file-types">PDF, JPG, PNG — até 10MB</p>
-                </div>
-
-                <div class="file-selected" id="file-selected">
-                    <span>📎</span>
-                    <span id="file-name"></span>
-                </div>
-
-                <button type="submit" class="btn-analisar">🔍 Encontrar vídeos</button>
-            </form>
-        </div>
-
-        {% if topicos %}
-        <div class="topicos">
-            <h2>🎯 Tópicos identificados</h2>
-            {% for topico in topicos %}
-            <span class="topico-tag">{{ topico }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% if videos %}
-        <div class="videos">
-            <h2>▶️ Melhores vídeos para estudar</h2>
-            {% for video in videos %}
-            <div class="video-card">
-                <img src="{{ video.thumbnail }}" alt="{{ video.titulo }}">
-                <div class="video-info">
-                    <span class="topico-label">{{ video.topico }}</span>
-                    <h3>{{ video.titulo }}</h3>
-                    <p class="canal">{{ video.canal }}</p>
-                    <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ Assistir no YouTube</a>
-                </div>
+    <!-- TAB: TEXTO -->
+    <div class="card {% if modo != 'arquivo' %}active{% endif %}" id="tab-texto">
+        <form action="/buscar" method="post" id="form-prompt" onsubmit="mostrarLoading()">
+            <label class="prompt-label">O que você precisa estudar?</label>
+            <div class="prompt-examples">
+                <span class="example-chip" onclick="preencherPrompt('Amanhã tenho prova de Cálculo 1, derivadas e integrais')">📐 Cálculo 1</span>
+                <span class="example-chip" onclick="preencherPrompt('Preciso aprender Contabilidade Básica, balanço patrimonial e DRE')">📊 Contabilidade</span>
+                <span class="example-chip" onclick="preencherPrompt('Tenho prova de Microeconomia, oferta e demanda')">📈 Microeconomia</span>
+                <span class="example-chip" onclick="preencherPrompt('Preciso estudar Direito Constitucional para concurso')">⚖️ Direito</span>
             </div>
-            {% endfor %}
+            <textarea name="prompt" id="prompt-input" placeholder="Ex: Amanhã tenho prova de Cálculo 1, derivadas e integrais. Me mande os melhores vídeos pra estudar hoje." required>{% if prompt %}{{ prompt }}{% endif %}</textarea>
+            <button type="submit" class="btn-primary">🔍 Encontrar os melhores vídeos</button>
+        </form>
+    </div>
+
+    <!-- TAB: ARQUIVO -->
+    <div class="card {% if modo == 'arquivo' %}active{% endif %}" id="tab-arquivo">
+        <form action="/analisar" method="post" enctype="multipart/form-data" id="form-upload" onsubmit="mostrarLoading()">
+            <input type="file" name="arquivo" id="arquivo" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
+            <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
+                <div class="upload-icon">📄</div>
+                <p><strong>Clique aqui</strong> ou arraste seu arquivo</p>
+                <p class="file-types">PDF, JPG, PNG, WEBP — até 10MB</p>
+            </div>
+            <div class="file-selected" id="file-selected">
+                <span>✅</span>
+                <span id="file-name"></span>
+            </div>
+            <button type="submit" class="btn-primary">🔍 Analisar e encontrar vídeos</button>
+        </form>
+    </div>
+
+    <!-- RESULTADOS -->
+    {% if topicos %}
+    <div class="topicos-box">
+        <h3>🎯 Tópicos identificados</h3>
+        {% for topico in topicos %}
+        <span class="topico-tag">{{ topico }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if videos %}
+    <div class="results-header">
+        <h2>▶️ Melhores vídeos para estudar</h2>
+        <span class="results-count">{{ videos|length }} vídeos</span>
+    </div>
+    {% for video in videos %}
+    <div class="video-card">
+        <img src="{{ video.thumbnail }}" alt="{{ video.titulo }}">
+        <div class="video-info">
+            <span class="topico-label">{{ video.topico }}</span>
+            <h3>{{ video.titulo }}</h3>
+            <p class="canal">{{ video.canal }}</p>
+            <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ Assistir no YouTube</a>
         </div>
-        {% endif %}
     </div>
+    {% endfor %}
+    {% endif %}
 
-    <div class="loading-overlay" id="loading">
-        <div class="spinner"></div>
-        <p>Analisando seu material...</p>
-        <small>A IA está extraindo os tópicos e buscando os melhores vídeos</small>
-    </div>
+</div>
 
-    <script>
-        const input = document.getElementById('arquivo');
-        const uploadArea = document.getElementById('upload-area');
-        const fileSelected = document.getElementById('file-selected');
-        const fileName = document.getElementById('file-name');
-        const form = document.getElementById('form-upload');
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <p>Analisando com IA...</p>
+    <small>Extraindo tópicos e buscando os melhores vídeos para você</small>
+</div>
 
+<script>
+    function trocarTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        if (tab === 'texto') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('tab-texto').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('tab-arquivo').classList.add('active');
+        }
+    }
+
+    function preencherPrompt(texto) {
+        document.getElementById('prompt-input').value = texto;
+        document.getElementById('prompt-input').focus();
+    }
+
+    function mostrarLoading() {
+        document.getElementById('loading').classList.add('visible');
+    }
+
+    const input = document.getElementById('arquivo');
+    const uploadArea = document.getElementById('upload-area');
+    const fileSelected = document.getElementById('file-selected');
+    const fileName = document.getElementById('file-name');
+
+    if (input) {
         input.addEventListener('change', () => {
             if (input.files[0]) {
                 fileName.textContent = input.files[0].name;
                 fileSelected.classList.add('visible');
-                uploadArea.style.borderColor = '#4fc3f7';
+                uploadArea.style.borderColor = '#818cf8';
             }
         });
 
@@ -260,11 +401,7 @@
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
@@ -274,10 +411,7 @@
                 fileSelected.classList.add('visible');
             }
         });
-
-        form.addEventListener('submit', () => {
-            document.getElementById('loading').classList.add('visible');
-        });
-    </script>
+    }
+</script>
 </body>
 </html>
