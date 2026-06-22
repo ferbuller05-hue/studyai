@@ -12,10 +12,18 @@ from app.chat import responder
 from app.feedback import analisar_feedback
 from app.progresso import gerar_analise_progresso
 from app.config import PREMIUM_TOKENS, ADMIN_KEY, MP_LINK, WHATSAPP
+from app.database import engine, Base
+from app.routers import onboarding as onboarding_router
 
-app = FastAPI(title="StudyAI", version="0.5.0")
+# Cria tabelas no banco se não existirem (fallback para dev sem rodar alembic)
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="StudyAI", version="0.6.0")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+# ── Routers ───────────────────────────────────────────────────────────────────
+app.include_router(onboarding_router.router)
 
 
 # ── HELPERS ──────────────────────────────────────────────────────────────
