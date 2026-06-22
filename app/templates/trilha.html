@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilha de Estudo — StudyAI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d0d0d;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
+        .logo span { color: #00d4aa; }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #555;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: #00d4aa; }
+
+        .container { max-width: 820px; margin: 0 auto; padding: 32px 20px 80px; }
+
+        /* PAGE TITLE */
+        .page-header { margin-bottom: 32px; }
+        .page-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .page-sub { color: #555; font-size: 14px; }
+        .tempo-total {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #00d4aa15;
+            border: 1px solid #00d4aa33;
+            color: #00d4aa;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* ETAPA CARD */
+        .etapa {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .etapa-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .etapa-num {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            background: #00d4aa;
+            color: #0d0d0d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            font-weight: 900;
+        }
+        .etapa-meta { flex: 1; }
+        .etapa-tema { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+        .etapa-objetivo { color: #666; font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+        .etapa-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .etapa-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 8px;
+        }
+        .tag-tempo { background: #1e1e1e; color: #555; }
+        .tag-prereq { background: #1a1f2e; color: #7aa2f7; }
+
+        /* SESSÕES */
+        .sessoes { display: grid; grid-template-columns: 1fr 1fr; }
+        @media (max-width: 600px) { .sessoes { grid-template-columns: 1fr; } }
+
+        .sessao {
+            padding: 20px 24px;
+            border-right: 1px solid #1a1a1a;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .sessao:nth-child(2n) { border-right: none; }
+        .sessao:nth-last-child(-n+2) { border-bottom: none; }
+        @media (max-width: 600px) {
+            .sessao { border-right: none; }
+            .sessao:last-child { border-bottom: none; }
+        }
+
+        .sessao-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .sessao-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .icon-introducao { background: #0a1f1a; }
+        .icon-aprofundamento { background: #1a1a2e; }
+        .icon-exercicios { background: #1f1a0a; }
+        .icon-revisao { background: #1f0a1a; }
+
+        .sessao-tipo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .tipo-introducao { color: #00d4aa; }
+        .tipo-aprofundamento { color: #7aa2f7; }
+        .tipo-exercicios { color: #f59e0b; }
+        .tipo-revisao { color: #f472b6; }
+
+        .sessao-duracao { font-size: 11px; color: #333; margin-left: auto; }
+
+        .sessao-desc { font-size: 13px; color: #777; line-height: 1.5; margin-bottom: 14px; }
+
+        /* VIDEO NA SESSÃO */
+        .video-mini {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 10px;
+            overflow: hidden;
+            text-decoration: none;
+            display: block;
+            transition: border-color 0.2s;
+        }
+        .video-mini:hover { border-color: #333; }
+        .video-mini img { width: 100%; height: 90px; object-fit: cover; display: block; }
+        .video-mini-info { padding: 8px 10px; }
+        .video-mini-titulo {
+            font-size: 11px;
+            font-weight: 600;
+            color: #ccc;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .video-mini-canal { font-size: 10px; color: #444; }
+        .video-mini-yt {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ff0000;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin-top: 6px;
+        }
+
+        .sem-video {
+            background: #161616;
+            border: 1px dashed #222;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            color: #333;
+            font-size: 12px;
+        }
+
+        /* CRONOGRAMA */
+        .cronograma { margin-top: 32px; }
+        .cronograma-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+        }
+        .dias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+        .dia-card {
+            background: #161616;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .dia-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: #00d4aa;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+        .dia-temas { font-size: 13px; color: #ccc; line-height: 1.5; margin-bottom: 8px; }
+        .dia-carga { font-size: 11px; color: #444; }
+
+        /* CHAT */
+        .chat-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            background: #00d4aa;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 20px rgba(0,212,170,0.4);
+            z-index: 50;
+            transition: all 0.2s;
+        }
+        .chat-btn:hover { transform: scale(1.1); }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 96px;
+            right: 28px;
+            width: 360px;
+            height: 500px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-panel.open { display: flex; }
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #1e1e1e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-avatar {
+            width: 32px; height: 32px;
+            background: #00d4aa; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 14px;
+        }
+        .chat-header-info h4 { font-size: 14px; font-weight: 600; color: #e8e8e8; }
+        .chat-header-info span { font-size: 11px; color: #00d4aa; }
+        .chat-close { margin-left: auto; background: none; border: none; color: #444; font-size: 20px; cursor: pointer; }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+        .msg.bot { background: #1a1a1a; color: #e8e8e8; border: 1px solid #222; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg.user { background: #00d4aa; color: #0d0d0d; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
+        .msg.typing { color: #444; font-style: italic; }
+        .chat-input-area { padding: 12px 16px; border-top: 1px solid #1e1e1e; display: flex; gap: 10px; align-items: flex-end; }
+        .chat-input {
+            flex: 1; background: #1a1a1a; border: 1px solid #222; border-radius: 12px;
+            padding: 10px 14px; font-size: 13px; font-family: inherit; color: #e8e8e8;
+            outline: none; resize: none; max-height: 80px; line-height: 1.4;
+        }
+        .chat-input::placeholder { color: #333; }
+        .chat-input:focus { border-color: #00d4aa44; }
+        .chat-send {
+            background: #00d4aa; border: none; border-radius: 10px;
+            width: 36px; height: 36px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .chat-send svg { width: 16px; height: 16px; color: #0d0d0d; }
+
+        @media (max-width: 600px) {
+            .chat-panel { width: calc(100vw - 32px); right: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">Study<span>AI</span></div>
+    <a href="/" class="back-btn">← Voltar</a>
+</div>
+
+<div class="container">
+
+    <div class="page-header">
+        <div class="page-title">📚 Sua Trilha de Estudo</div>
+        <div class="page-sub">Sequência personalizada baseada no diagnóstico do seu material</div>
+        {% if trilha.tempo_total %}
+        <div class="tempo-total">⏱ Tempo total estimado: {{ trilha.tempo_total }}</div>
+        {% endif %}
+    </div>
+
+    <!-- ETAPAS -->
+    {% for etapa in trilha.etapas %}
+    {% set vids_tema = videos.get(etapa.tema, {}) %}
+    <div class="etapa">
+        <div class="etapa-header">
+            <div class="etapa-num">{{ etapa.ordem }}</div>
+            <div class="etapa-meta">
+                <div class="etapa-tema">{{ etapa.tema }}</div>
+                <div class="etapa-objetivo">{{ etapa.objetivo }}</div>
+                <div class="etapa-tags">
+                    {% if etapa.tempo_estimado %}
+                    <span class="etapa-tag tag-tempo">⏱ {{ etapa.tempo_estimado }}</span>
+                    {% endif %}
+                    {% if etapa.prerequisito %}
+                    <span class="etapa-tag tag-prereq">Pré-req: {{ etapa.prerequisito }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="sessoes">
+            {% for sessao in etapa.sessoes %}
+            {% set video = vids_tema.get(sessao.tipo) %}
+            <div class="sessao">
+                <div class="sessao-header">
+                    <div class="sessao-icon icon-{{ sessao.tipo }}">
+                        {% if sessao.tipo == 'introducao' %}🎯
+                        {% elif sessao.tipo == 'aprofundamento' %}📖
+                        {% elif sessao.tipo == 'exercicios' %}✏️
+                        {% elif sessao.tipo == 'revisao' %}🔄
+                        {% endif %}
+                    </div>
+                    <span class="sessao-tipo tipo-{{ sessao.tipo }}">
+                        {% if sessao.tipo == 'introducao' %}Introdução
+                        {% elif sessao.tipo == 'aprofundamento' %}Aprofundamento
+                        {% elif sessao.tipo == 'exercicios' %}Exercícios
+                        {% elif sessao.tipo == 'revisao' %}Revisão
+                        {% endif %}
+                    </span>
+                    {% if sessao.duracao %}
+                    <span class="sessao-duracao">{{ sessao.duracao }}</span>
+                    {% endif %}
+                </div>
+                <div class="sessao-desc">{{ sessao.descricao }}</div>
+
+                {% if video %}
+                <a href="{{ video.url }}" target="_blank" class="video-mini">
+                    <img src="{{ video.thumbnail }}" alt="{{ video.titulo }}">
+                    <div class="video-mini-info">
+                        <div class="video-mini-titulo">{{ video.titulo }}</div>
+                        <div class="video-mini-canal">{{ video.canal }}</div>
+                        <span class="video-mini-yt">▶ Assistir</span>
+                    </div>
+                </a>
+                {% else %}
+                <div class="sem-video">Nenhum vídeo encontrado</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- CRONOGRAMA -->
+    {% if trilha.cronograma %}
+    <div class="cronograma">
+        <div class="cronograma-title">📅 Cronograma Sugerido</div>
+        <div class="dias-grid">
+            {% for dia in trilha.cronograma %}
+            <div class="dia-card">
+                <div class="dia-num">Dia {{ dia.dia }}</div>
+                <div class="dia-temas">
+                    {% for tema in dia.temas %}{{ tema }}{% if not loop.last %}, {% endif %}{% endfor %}
+                </div>
+                <div class="dia-carga">⏱ {{ dia.carga }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- CHAT -->
+<button class="chat-btn" onclick="toggleChat()" title="Assistente de estudos">💬</button>
+
+<div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-header-info">
+            <h4>Assistente StudyAI</h4>
+            <span>● online</span>
+        </div>
+        <button class="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+        <div class="msg bot">Oi! Sua trilha está pronta. Pode me perguntar sobre qualquer tema da trilha! 📚</div>
+    </div>
+    <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" placeholder="Dúvida sobre a trilha..." rows="1" onkeydown="chatKeyDown(event)"></textarea>
+        <button class="chat-send" onclick="enviarMensagem()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    let chatAberto = false;
+    let historico = [];
+    const topicosAtivos = {{ trilha.etapas | map(attribute='tema') | list | tojson }};
+
+    function toggleChat() {
+        chatAberto = !chatAberto;
+        document.getElementById('chat-panel').classList.toggle('open', chatAberto);
+        if (chatAberto) document.getElementById('chat-input').focus();
+    }
+
+    function chatKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
+    }
+
+    async function enviarMensagem() {
+        const input = document.getElementById('chat-input');
+        const texto = input.value.trim();
+        if (!texto) return;
+        input.value = '';
+        adicionarMsg(texto, 'user');
+        historico.push({ role: 'user', content: texto });
+        const typing = adicionarMsg('...', 'bot typing');
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mensagem: texto, historico: historico.slice(-10), topicos: topicosAtivos })
+            });
+            const data = await res.json();
+            typing.remove();
+            adicionarMsg(data.resposta, 'bot');
+            historico.push({ role: 'assistant', content: data.resposta });
+        } catch (e) {
+            typing.remove();
+            adicionarMsg('Erro ao conectar. Tente novamente.', 'bot');
+        }
+    }
+
+    function adicionarMsg(texto, tipo) {
+        const msgs = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.className = 'msg ' + tipo;
+        div.textContent = texto;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+        return div;
+    }
+</script>
+</body>
+</html>

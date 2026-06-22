@@ -186,6 +186,64 @@ Regras:
         }
 
 
+def gerar_estrutura_trilha(temas: list) -> dict:
+    """Gera a trilha de aprendizado estruturada a partir dos temas do diagnóstico."""
+    import json
+    temas_str = json.dumps(temas, ensure_ascii=False, indent=2)
+
+    resposta = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=2000,
+        messages=[{
+            "role": "user",
+            "content": f"""Você é um especialista em educação. Crie uma trilha de aprendizado personalizada.
+
+Temas identificados no diagnóstico:
+{temas_str}
+
+Retorne APENAS um JSON válido neste formato:
+{{
+  "etapas": [
+    {{
+      "ordem": 1,
+      "tema": "Nome do tema",
+      "objetivo": "O que o aluno vai conseguir fazer após estudar isso",
+      "prerequisito": "Nome do tema anterior necessário, ou null",
+      "tempo_estimado": "2h",
+      "sessoes": [
+        {{"tipo": "introducao", "descricao": "Como e o que estudar nessa etapa", "duracao": "30min"}},
+        {{"tipo": "aprofundamento", "descricao": "O que aprofundar e como", "duracao": "40min"}},
+        {{"tipo": "exercicios", "descricao": "Tipo de exercícios a praticar", "duracao": "30min"}},
+        {{"tipo": "revisao", "descricao": "Como revisar e fixar o conteúdo", "duracao": "20min"}}
+      ]
+    }}
+  ],
+  "cronograma": [
+    {{"dia": 1, "temas": ["tema1"], "carga": "2h"}},
+    {{"dia": 2, "temas": ["tema2", "tema3"], "carga": "1h30min"}}
+  ],
+  "tempo_total": "X horas"
+}}
+
+Regras:
+- Máximo 5 etapas (use apenas os temas de maior prioridade)
+- Ordem lógica respeitando pré-requisitos
+- Cronograma realista (1-2 temas por dia, máximo 3h por dia)
+- Retorne APENAS o JSON, sem texto adicional"""
+        }]
+    )
+
+    try:
+        texto = resposta.content[0].text.strip()
+        if texto.startswith("```"):
+            texto = texto.split("```")[1]
+            if texto.startswith("json"):
+                texto = texto[4:]
+        return json.loads(texto.strip())
+    except Exception:
+        return {"etapas": [], "cronograma": [], "tempo_total": ""}
+
+
 def extrair_topicos_do_prompt(prompt: str) -> list[str]:
     resposta = client.messages.create(
         model="claude-haiku-4-5",

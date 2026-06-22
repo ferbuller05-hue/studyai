@@ -716,6 +716,32 @@
 
     {% endif %}
 
+    <!-- BOTÃO TRILHA -->
+    {% if diagnostico and diagnostico.temas %}
+    <form action="/trilha" method="post" style="margin-bottom: 32px;" onsubmit="document.getElementById('loading').classList.add('visible')">
+        <input type="hidden" name="temas_json" id="temas_json_input">
+        <button type="submit" onclick="prepararTrilha()" style="
+            width: 100%;
+            background: linear-gradient(135deg, #0a1f1a, #0d2d22);
+            border: 1px solid #00d4aa44;
+            color: #00d4aa;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+        " onmouseover="this.style.borderColor='#00d4aa'" onmouseout="this.style.borderColor='#00d4aa44'">
+            📚 Montar Trilha de Estudo Personalizada
+            <span style="font-size: 12px; color: #00d4aa88; font-weight: 400;">→ introdução, exercícios, revisão e cronograma</span>
+        </button>
+    </form>
+    {% endif %}
+
     <!-- VÍDEOS -->
     {% if videos %}
     <div class="results-title">
@@ -762,11 +788,19 @@
 
 <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
-    <p>Analisando material...</p>
-    <small>A IA está diagnosticando seu conteúdo</small>
+    <p id="loading-msg">Analisando material...</p>
+    <small id="loading-sub">A IA está diagnosticando seu conteúdo</small>
 </div>
 
 <script>
+    // Prepara os temas do diagnóstico para envio ao endpoint /trilha
+    function prepararTrilha() {
+        const temas = {{ diagnostico.temas | tojson if diagnostico and diagnostico.temas else '[]' }};
+        document.getElementById('temas_json_input').value = JSON.stringify(temas);
+        document.getElementById('loading-msg').textContent = 'Montando sua trilha...';
+        document.getElementById('loading-sub').textContent = 'Buscando vídeos para cada etapa de estudo';
+    }
+
     function trocarTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));

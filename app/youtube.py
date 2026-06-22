@@ -52,6 +52,35 @@ Responda APENAS com o número do melhor vídeo (1-{len(videos)}).
     except:
         return videos
 
+def buscar_videos_etapa(topico: str, tipo: str) -> dict | None:
+    """Busca o melhor vídeo para uma etapa específica (introdução, exercícios, etc)."""
+    queries = {
+        "introducao": f"{topico} introdução explicação para iniciantes",
+        "aprofundamento": f"{topico} aula completa aprofundamento",
+        "exercicios": f"{topico} exercícios resolvidos lista",
+        "revisao": f"{topico} revisão resumo rápido"
+    }
+    query = queries.get(tipo, f"{topico} aula")
+    videos = buscar_videos(query)
+    rankeados = rankear_videos(f"{topico} {tipo}", videos)
+    return rankeados[0] if rankeados else None
+
+
+def buscar_videos_trilha(etapas: list) -> dict:
+    """Retorna dict: tema → tipo → video. Máximo 4 temas para economizar quota."""
+    resultado = {}
+    for etapa in etapas[:4]:
+        tema = etapa["tema"]
+        resultado[tema] = {}
+        for sessao in etapa.get("sessoes", []):
+            tipo = sessao["tipo"]
+            video = buscar_videos_etapa(tema, tipo)
+            if video:
+                video["tipo_sessao"] = tipo
+                resultado[tema][tipo] = video
+    return resultado
+
+
 def buscar_videos_por_topicos(topicos: list[str]) -> list[dict]:
     todos_videos = []
     for topico in topicos[:5]:

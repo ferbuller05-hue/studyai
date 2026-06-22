@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
-from app.extractor import processar_arquivo, extrair_topicos_do_prompt, diagnosticar_material, diagnosticar_material_imagem, extrair_texto_pdf, extrair_topicos_da_imagem
-from app.youtube import buscar_videos_por_topicos
+from app.extractor import processar_arquivo, extrair_topicos_do_prompt, diagnosticar_material, diagnosticar_material_imagem, extrair_texto_pdf, extrair_topicos_da_imagem, gerar_estrutura_trilha
+from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha
 from app.chat import responder
 import base64
 
@@ -72,6 +72,24 @@ async def buscar(request: Request, prompt: str = Form(...)):
         "videos": videos,
         "prompt": prompt,
         "modo": "texto"
+    })
+
+
+@app.post("/trilha", response_class=HTMLResponse)
+async def trilha(request: Request, temas_json: str = Form(...)):
+    import json
+    temas = json.loads(temas_json)
+
+    # Gera estrutura da trilha com Claude
+    estrutura = gerar_estrutura_trilha(temas)
+
+    # Busca vídeos específicos por etapa e tipo
+    videos_trilha = buscar_videos_trilha(estrutura.get("etapas", []))
+
+    return templates.TemplateResponse("trilha.html", {
+        "request": request,
+        "trilha": estrutura,
+        "videos": videos_trilha,
     })
 
 
