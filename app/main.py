@@ -6,6 +6,7 @@ from app.extractor import processar_arquivo, extrair_topicos_do_prompt, diagnost
 from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha
 from app.chat import responder
 from app.feedback import analisar_feedback
+from app.progresso import gerar_analise_progresso
 import base64
 
 app = FastAPI(title="StudyAI", version="0.4.0")
@@ -118,6 +119,21 @@ async def feedback(request: Request):
         historico_erros=data.get("historico_erros", [])
     )
     return JSONResponse(resultado)
+
+
+@app.get("/progresso", response_class=HTMLResponse)
+async def pagina_progresso(request: Request):
+    return templates.TemplateResponse("progresso.html", {"request": request})
+
+
+@app.post("/progresso-analise")
+async def progresso_analise(request: Request):
+    data = await request.json()
+    perfil = data.get("perfil", {})
+    streak = int(data.get("streak", 0))
+    dias_sem_estudo = int(data.get("dias_sem_estudo", 0))
+    analise = gerar_analise_progresso(perfil, streak, dias_sem_estudo)
+    return JSONResponse(analise)
 
 
 @app.get("/health")

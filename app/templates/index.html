@@ -871,6 +871,18 @@
 <div class="header">
     <div class="logo">Study<span>AI</span></div>
     <p class="tagline">Diagnóstico inteligente do seu material de estudo</p>
+    <a href="/progresso" style="
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #161616; border: 1px solid #222;
+        color: #555; text-decoration: none;
+        padding: 8px 14px; border-radius: 10px;
+        font-size: 12px; font-weight: 700;
+        transition: all 0.2s;
+        white-space: nowrap;
+    " onmouseover="this.style.borderColor='#00d4aa44';this.style.color='#00d4aa'"
+       onmouseout="this.style.borderColor='#222';this.style.color='#555'">
+        📊 Progresso
+    </a>
 </div>
 
 <div class="container">
@@ -1283,6 +1295,20 @@
             </div>`;
         }).join('');
     }
+
+    // Atualiza streak ao carregar a página com resultados
+    {% if diagnostico %}
+    (function() {
+        const STREAK_KEY = 'studyai_streak';
+        const hoje = new Date().toDateString();
+        const dados = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"streak":0,"ultima":""}');
+        if (dados.ultima !== hoje) {
+            const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+            const novoStreak = dados.ultima === ontem.toDateString() ? (dados.streak || 0) + 1 : 1;
+            localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: novoStreak, ultima: hoje }));
+        }
+    })();
+    {% endif %}
 
     // Chama ao carregar
     atualizarPainel();
