@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyAI</title>
+    <title>StudyAI — Pare de estudar no escuro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -16,18 +16,192 @@
 
         /* HEADER */
         .header {
-            padding: 28px 24px 24px;
-            text-align: center;
+            padding: 16px 24px;
             border-bottom: 1px solid #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .logo {
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: -1px;
-            margin-bottom: 6px;
         }
         .logo span { color: #00d4aa; }
         .tagline { color: #555; font-size: 14px; }
+
+        /* HERO */
+        .hero {
+            text-align: center;
+            padding: 64px 24px 48px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0a1f1a;
+            border: 1px solid #00d4aa33;
+            color: #00d4aa;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            letter-spacing: 0.3px;
+        }
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            color: #f0f0f0;
+        }
+        .hero h1 em {
+            font-style: normal;
+            color: #00d4aa;
+        }
+        .hero p {
+            font-size: 17px;
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 36px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 48px;
+        }
+        .cta-primary {
+            background: #00d4aa;
+            color: #0d0d0d;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .cta-primary:hover { background: #00bfa0; transform: translateY(-1px); }
+        .cta-secondary {
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .cta-secondary:hover { color: #aaa; }
+
+        /* PROVA SOCIAL */
+        .social-proof {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px solid #1a1a1a;
+        }
+        .proof-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #444;
+            font-weight: 600;
+        }
+        .proof-item span { color: #00d4aa; }
+
+        /* COMO FUNCIONA */
+        .como-funciona {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 20px 48px;
+        }
+        .cf-title {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .cf-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 600px) { .cf-steps { grid-template-columns: 1fr; } }
+        .cf-step {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .cf-step-num {
+            width: 32px; height: 32px;
+            background: #00d4aa15;
+            color: #00d4aa;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800;
+            margin: 0 auto 12px;
+        }
+        .cf-step h3 { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #e8e8e8; }
+        .cf-step p { font-size: 12px; color: #555; line-height: 1.5; }
+
+        /* BENEFÍCIOS */
+        .beneficios {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 20px 48px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 600px) { .beneficios { grid-template-columns: 1fr; } }
+        .beneficio {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .beneficio-icon { font-size: 20px; flex-shrink: 0; }
+        .beneficio h4 { font-size: 13px; font-weight: 700; color: #e8e8e8; margin-bottom: 3px; }
+        .beneficio p { font-size: 12px; color: #555; line-height: 1.4; }
+
+        /* DIVISOR DE SEÇÃO */
+        .section-divider {
+            max-width: 760px;
+            margin: 0 auto 32px;
+            padding: 0 20px;
+        }
+        .section-divider-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .section-divider hr { border: none; border-top: 1px solid #1a1a1a; }
 
         /* CONTAINER */
         .container { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; }
@@ -868,31 +1042,116 @@
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
     <div class="logo">Study<span>AI</span></div>
-    <p class="tagline">Diagnóstico inteligente do seu material de estudo</p>
     <div style="display:flex;gap:8px;align-items:center;">
         <span id="premium-badge" style="display:none;background:#00d4aa22;border:1px solid #00d4aa44;color:#00d4aa;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;">⚡ Premium</span>
         <a href="/progresso" style="
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #161616; border: 1px solid #222;
-            color: #555; text-decoration: none;
-            padding: 8px 14px; border-radius: 10px;
-            font-size: 12px; font-weight: 700; transition: all 0.2s; white-space: nowrap;
+            display:inline-flex;align-items:center;gap:6px;
+            background:#161616;border:1px solid #222;color:#555;
+            text-decoration:none;padding:8px 14px;border-radius:10px;
+            font-size:12px;font-weight:700;transition:all 0.2s;white-space:nowrap;
         " onmouseover="this.style.borderColor='#00d4aa44';this.style.color='#00d4aa'"
            onmouseout="this.style.borderColor='#222';this.style.color='#555'">
             📊 Progresso
         </a>
         <a id="upgrade-btn" href="/upgrade" style="
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #00d4aa; color: #0d0d0d;
-            text-decoration: none; padding: 8px 14px; border-radius: 10px;
-            font-size: 12px; font-weight: 800; white-space: nowrap;
+            display:inline-flex;align-items:center;gap:6px;
+            background:#00d4aa;color:#0d0d0d;text-decoration:none;
+            padding:8px 14px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap;
         ">⚡ Premium</a>
     </div>
 </div>
 
-<div class="container">
+<!-- HERO (só aparece sem resultados) -->
+{% if not diagnostico %}
+<div class="hero">
+    <div class="hero-badge">🎯 Para ENEM, vestibular e concursos</div>
+    <h1>Pare de estudar<br>no escuro.<br><em>Estude o que vai cair.</em></h1>
+    <p>Envie sua prova, PDF ou lista de exercícios. A IA analisa o material, identifica o que mais cai e monta sua trilha de estudo — com os melhores vídeos, na ordem certa.</p>
+    <div class="hero-cta-group">
+        <a href="#input-area" class="cta-primary" onclick="document.getElementById('input-area').scrollIntoView({behavior:'smooth'});return false;">
+            Analisar meu material agora →
+        </a>
+        <a href="/upgrade" class="cta-secondary">Ver planos →</a>
+    </div>
+    <div class="social-proof">
+        <div class="proof-item"><span>✓</span> Gratuito para começar</div>
+        <div class="proof-item"><span>✓</span> Funciona com PDF e foto</div>
+        <div class="proof-item"><span>✓</span> Resultado em segundos</div>
+        <div class="proof-item"><span>✓</span> Sem cadastro</div>
+    </div>
+</div>
+
+<!-- COMO FUNCIONA -->
+<div class="como-funciona">
+    <div class="cf-title">Como funciona</div>
+    <div class="cf-steps">
+        <div class="cf-step">
+            <div class="cf-step-num">1</div>
+            <h3>Envie seu material</h3>
+            <p>Prova antiga, PDF, lista de exercícios ou apenas escreva o que precisa estudar.</p>
+        </div>
+        <div class="cf-step">
+            <div class="cf-step-num">2</div>
+            <h3>A IA diagnostica</h3>
+            <p>Identificamos os temas mais cobrados, o nível de dificuldade e a ordem certa de estudo.</p>
+        </div>
+        <div class="cf-step">
+            <div class="cf-step-num">3</div>
+            <h3>Estude com foco</h3>
+            <p>Trilha personalizada com os melhores vídeos para cada tema — do básico ao avançado.</p>
+        </div>
+    </div>
+</div>
+
+<!-- BENEFÍCIOS -->
+<div class="beneficios">
+    <div class="beneficio">
+        <div class="beneficio-icon">🎯</div>
+        <div>
+            <h4>Sabe o que vai cair</h4>
+            <p>A IA detecta os temas mais frequentes do seu material antes de você estudar.</p>
+        </div>
+    </div>
+    <div class="beneficio">
+        <div class="beneficio-icon">⏱</div>
+        <div>
+            <h4>Economiza horas</h4>
+            <p>Sem perder tempo procurando vídeo bom. A IA já escolheu os melhores para você.</p>
+        </div>
+    </div>
+    <div class="beneficio">
+        <div class="beneficio-icon">🗺</div>
+        <div>
+            <h4>Estuda na ordem certa</h4>
+            <p>Do básico ao avançado, respeitando pré-requisitos. Sem pular etapas importantes.</p>
+        </div>
+    </div>
+    <div class="beneficio">
+        <div class="beneficio-icon">📈</div>
+        <div>
+            <h4>Acompanha seu domínio</h4>
+            <p>Avalie cada aula e veja seu progresso crescer tema por tema.</p>
+        </div>
+    </div>
+    <div class="beneficio" style="grid-column: span 2;">
+        <div class="beneficio-icon">🔁</div>
+        <div>
+            <h4>Revisões no momento certo</h4>
+            <p>O sistema agenda revisões com repetição espaçada para você não esquecer o que aprendeu.</p>
+        </div>
+    </div>
+</div>
+
+<div class="section-divider">
+    <div class="section-divider-label">Analise seu material agora</div>
+    <hr>
+</div>
+{% endif %}
+
+<div class="container" id="input-area">
 
     <div class="tabs">
         <button class="tab-btn {% if modo != 'arquivo' %}active{% endif %}" onclick="trocarTab('texto')">💬 Digitar</button>
