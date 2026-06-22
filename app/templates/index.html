@@ -1340,6 +1340,240 @@
             .progresso-btn { left: 16px; }
             .progresso-panel { left: 16px; width: calc(100vw - 32px); }
         }
+
+        /* ── ONBOARDING MODAL ─────────────────────────────────────────────── */
+        #onboarding-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #onboarding-modal.open { display: flex; }
+
+        .ob-box {
+            background: #111;
+            border: 1px solid #00d4aa33;
+            border-radius: 24px;
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .ob-step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+        .ob-step-dot {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800;
+            border: 2px solid #1e1e1e;
+            color: #444;
+            background: #0d0d0d;
+            transition: all 0.2s;
+        }
+        .ob-step-dot.active {
+            border-color: #00d4aa;
+            color: #00d4aa;
+            background: #0a1f1a;
+        }
+        .ob-step-dot.done {
+            border-color: #00d4aa44;
+            color: #555;
+            background: #0a1f1a55;
+        }
+        .ob-step-line {
+            width: 40px; height: 2px;
+            background: #1e1e1e;
+        }
+
+        .ob-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #f0f0f0;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        .ob-sub {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .ob-field { margin-bottom: 24px; }
+        .ob-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+        }
+
+        .ob-date-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #e8e8e8;
+            outline: none;
+            transition: border-color 0.2s;
+            color-scheme: dark;
+        }
+        .ob-date-input:focus { border-color: #00d4aa55; }
+
+        .ob-horas-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .ob-horas-wrapper input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
+            outline: none;
+        }
+        .ob-horas-wrapper input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px; height: 22px;
+            background: #00d4aa;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px #00d4aa44;
+        }
+        .ob-horas-val {
+            font-size: 20px;
+            font-weight: 900;
+            color: #00d4aa;
+            min-width: 52px;
+            text-align: right;
+        }
+        .ob-horas-hint {
+            font-size: 11px;
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .ob-skip {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #333;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px;
+            transition: color 0.2s;
+            margin-top: 4px;
+        }
+        .ob-skip:hover { color: #555; }
+
+        .ob-btn-next {
+            width: 100%;
+            background: #00d4aa;
+            color: #0d0d0d;
+            border: none;
+            padding: 15px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ob-btn-next:hover { background: #00bfa0; }
+
+        /* ── ONBOARDING PASSO 3 — matérias ────────────────────────────────── */
+        #onboarding-modal-3 {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2001;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #onboarding-modal-3.open { display: flex; }
+
+        .ob-materia-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .ob-chip {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 100px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.18s;
+            user-select: none;
+        }
+        .ob-chip:hover { border-color: #00d4aa44; color: #ccc; }
+        .ob-chip.selected {
+            background: #0a1f1a;
+            border-color: #00d4aa;
+            color: #00d4aa;
+        }
+        .ob-custom-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .ob-custom-input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #e8e8e8;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .ob-custom-input:focus { border-color: #00d4aa55; }
+        .ob-custom-input::placeholder { color: #333; }
+        .ob-custom-add {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #00d4aa;
+            cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .ob-custom-add:hover { border-color: #00d4aa55; background: #0a1f1a; }
+        .ob-sel-count {
+            font-size: 11px;
+            color: #333;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -1949,6 +2183,93 @@
     {% endfor %}
     {% endif %}
 
+</div>
+
+<!-- MODAL DE ONBOARDING — PASSO 2 -->
+<div id="onboarding-modal">
+    <div class="ob-box">
+        <!-- Indicador de passos -->
+        <div class="ob-step-indicator">
+            <div class="ob-step-dot done">1</div>
+            <div class="ob-step-line"></div>
+            <div class="ob-step-dot active">2</div>
+            <div class="ob-step-line"></div>
+            <div class="ob-step-dot">3</div>
+        </div>
+
+        <div class="ob-title">Quando é sua prova?</div>
+        <div class="ob-sub">Com a data e sua disponibilidade, montamos um cronograma realista para você chegar preparado.</div>
+
+        <!-- Data da prova -->
+        <div class="ob-field">
+            <label class="ob-label">Data da prova <span style="color:#333;font-weight:400;text-transform:none;">(opcional)</span></label>
+            <input type="date" id="ob-data-prova" class="ob-date-input"
+                   min="{{ '' }}" placeholder="dd/mm/aaaa">
+        </div>
+
+        <!-- Horas por dia -->
+        <div class="ob-field">
+            <label class="ob-label">Horas disponíveis por dia para estudar</label>
+            <div class="ob-horas-wrapper">
+                <input type="range" id="ob-horas-slider" min="0.5" max="12" step="0.5" value="2"
+                       oninput="atualizarHoras(this.value)">
+                <span class="ob-horas-val" id="ob-horas-val">2h</span>
+            </div>
+            <div class="ob-horas-hint" id="ob-horas-hint">Bom ritmo — suficiente para cobrir os temas em tempo.</div>
+        </div>
+
+        <button class="ob-btn-next" onclick="salvarPasso2()">Continuar →</button>
+        <button class="ob-skip" onclick="fecharOnboarding()">Pular por agora</button>
+    </div>
+</div>
+
+<!-- MODAL DE ONBOARDING — PASSO 3 -->
+<div id="onboarding-modal-3">
+    <div class="ob-box">
+        <div class="ob-step-indicator">
+            <div class="ob-step-dot done">1</div>
+            <div class="ob-step-line"></div>
+            <div class="ob-step-dot done">2</div>
+            <div class="ob-step-line"></div>
+            <div class="ob-step-dot active">3</div>
+        </div>
+
+        <div class="ob-title">Onde você trava mais?</div>
+        <div class="ob-sub">Selecione as matérias que mais te dão trabalho. Vamos priorizá-las na sua trilha.</div>
+
+        <div class="ob-field">
+            <div class="ob-sel-count" id="ob-sel-count">0 matérias selecionadas</div>
+            <div class="ob-materia-grid" id="ob-materia-grid">
+                <div class="ob-chip" onclick="toggleMateria(this, 'Matemática')">Matemática</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Português')">Português</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Redação')">Redação</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Física')">Física</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Química')">Química</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Biologia')">Biologia</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'História')">História</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Geografia')">Geografia</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Filosofia')">Filosofia</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Sociologia')">Sociologia</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Inglês')">Inglês</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Direito')">Direito</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Informática')">Informática</div>
+                <div class="ob-chip" onclick="toggleMateria(this, 'Raciocínio Lógico')">Raciocínio Lógico</div>
+            </div>
+        </div>
+
+        <div class="ob-field">
+            <label class="ob-label">Adicionar matéria personalizada</label>
+            <div class="ob-custom-row">
+                <input type="text" id="ob-custom-materia" class="ob-custom-input"
+                       placeholder="Ex: Atualidades, Direito Tributário..."
+                       onkeydown="if(event.key==='Enter'){adicionarMateriaCustom();event.preventDefault();}">
+                <button class="ob-custom-add" onclick="adicionarMateriaCustom()">+ Adicionar</button>
+            </div>
+        </div>
+
+        <button class="ob-btn-next" onclick="salvarPasso3()">Concluir →</button>
+        <button class="ob-skip" onclick="fecharOnboarding3()">Pular por agora</button>
+    </div>
 </div>
 
 <!-- CHAT FLUTUANTE -->
@@ -2710,6 +3031,162 @@
             btn.textContent = 'Tentar novamente';
         }
     }
+
+    // ── ONBOARDING — PASSO 2 ────────────────────────────────────────────────
+    const OB_KEY   = 'studyai_onboarding';   // dados salvos
+    const OB_STEP  = 'studyai_ob_step';       // passo concluído até aqui
+    const SID_KEY  = 'studyai_session_id';    // identificador de sessão
+
+    function getSessionId() {
+        let sid = localStorage.getItem(SID_KEY);
+        if (!sid) {
+            sid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+            localStorage.setItem(SID_KEY, sid);
+        }
+        return sid;
+    }
+
+    function atualizarHoras(val) {
+        const v = parseFloat(val);
+        document.getElementById('ob-horas-val').textContent = v % 1 === 0 ? v + 'h' : v + 'h';
+        const hints = {
+            baixo:  'Cronograma leve — priorizaremos o essencial.',
+            medio:  'Bom ritmo — suficiente para cobrir os temas em tempo.',
+            alto:   'Ritmo intenso — você vai cobrir tudo com folga!'
+        };
+        const cat = v <= 1.5 ? 'baixo' : v <= 4 ? 'medio' : 'alto';
+        document.getElementById('ob-horas-hint').textContent = hints[cat];
+    }
+
+    function abrirOnboarding() {
+        // Define data mínima como amanhã
+        const amanha = new Date();
+        amanha.setDate(amanha.getDate() + 1);
+        document.getElementById('ob-data-prova').min = amanha.toISOString().split('T')[0];
+        document.getElementById('onboarding-modal').classList.add('open');
+    }
+
+    function fecharOnboarding() {
+        document.getElementById('onboarding-modal').classList.remove('open');
+        // Marca como "pulado" para não abrir de novo nesta sessão
+        sessionStorage.setItem('ob_pulado', '1');
+    }
+
+    async function salvarPasso2() {
+        const dataInput = document.getElementById('ob-data-prova').value;
+        const horas     = parseFloat(document.getElementById('ob-horas-slider').value);
+        const sid       = getSessionId();
+
+        // Salva localmente
+        const ob = JSON.parse(localStorage.getItem(OB_KEY) || '{}');
+        ob.data_prova    = dataInput || null;
+        ob.horas_por_dia = horas;
+        ob.session_id    = sid;
+        localStorage.setItem(OB_KEY, JSON.stringify(ob));
+
+        // Envia ao backend (PATCH — campos parciais)
+        try {
+            await fetch('/onboarding/' + sid, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data_prova:    dataInput || null,
+                    horas_por_dia: horas
+                })
+            });
+        } catch (_) { /* silencioso — dados já salvos em localStorage */ }
+
+        localStorage.setItem(OB_STEP, '2');
+        fecharOnboarding();
+        abrirPasso3();
+    }
+
+    // ── ONBOARDING — PASSO 3 ────────────────────────────────────────────────
+    const OB_MATERIAS_SEL = new Set(); // matérias selecionadas nesta sessão
+
+    function abrirPasso3() {
+        document.getElementById('onboarding-modal-3').classList.add('open');
+    }
+
+    function fecharOnboarding3() {
+        document.getElementById('onboarding-modal-3').classList.remove('open');
+        sessionStorage.setItem('ob_pulado', '1');
+    }
+
+    function atualizarContador() {
+        const n = OB_MATERIAS_SEL.size;
+        document.getElementById('ob-sel-count').textContent =
+            n === 0 ? 'Nenhuma selecionada' : n + (n === 1 ? ' matéria selecionada' : ' matérias selecionadas');
+    }
+
+    function toggleMateria(el, nome) {
+        if (OB_MATERIAS_SEL.has(nome)) {
+            OB_MATERIAS_SEL.delete(nome);
+            el.classList.remove('selected');
+        } else {
+            OB_MATERIAS_SEL.add(nome);
+            el.classList.add('selected');
+        }
+        atualizarContador();
+    }
+
+    function adicionarMateriaCustom() {
+        const input = document.getElementById('ob-custom-materia');
+        const nome  = input.value.trim();
+        if (!nome || OB_MATERIAS_SEL.has(nome)) { input.value = ''; return; }
+        if (OB_MATERIAS_SEL.size >= 20) {
+            input.value = '';
+            return;
+        }
+        // Cria chip dinâmico
+        const chip = document.createElement('div');
+        chip.className = 'ob-chip selected';
+        chip.textContent = nome;
+        chip.onclick = function() { toggleMateria(chip, nome); };
+        document.getElementById('ob-materia-grid').appendChild(chip);
+        OB_MATERIAS_SEL.add(nome);
+        atualizarContador();
+        input.value = '';
+    }
+
+    async function salvarPasso3() {
+        const sid = getSessionId();
+        const materias = Array.from(OB_MATERIAS_SEL).map(m => ({ materia: m, nivel: 'médio' }));
+
+        // Salva localmente
+        const ob = JSON.parse(localStorage.getItem(OB_KEY) || '{}');
+        ob.materias_dificuldade = materias;
+        localStorage.setItem(OB_KEY, JSON.stringify(ob));
+
+        // Envia ao backend
+        try {
+            await fetch('/onboarding/' + sid, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ materias_dificuldade: materias })
+            });
+        } catch (_) { /* silencioso */ }
+
+        localStorage.setItem(OB_STEP, '3');
+        fecharOnboarding3();
+    }
+    // ── FIM ONBOARDING PASSO 3 ──────────────────────────────────────────────
+
+    // Abre o modal automaticamente no passo correto
+    (function() {
+        const stepConcluido = parseInt(localStorage.getItem(OB_STEP) || '0');
+        const pulado        = sessionStorage.getItem('ob_pulado');
+        if (pulado) return;
+        if (stepConcluido < 2) {
+            setTimeout(abrirOnboarding, 1200);
+        } else if (stepConcluido < 3) {
+            setTimeout(abrirPasso3, 1200);
+        }
+    })();
+    // ── FIM ONBOARDING ──────────────────────────────────────────────────────
 
     if (inputFile) {
         inputFile.addEventListener('change', () => {
