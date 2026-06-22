@@ -871,18 +871,25 @@
 <div class="header">
     <div class="logo">Study<span>AI</span></div>
     <p class="tagline">Diagnóstico inteligente do seu material de estudo</p>
-    <a href="/progresso" style="
-        display: inline-flex; align-items: center; gap: 6px;
-        background: #161616; border: 1px solid #222;
-        color: #555; text-decoration: none;
-        padding: 8px 14px; border-radius: 10px;
-        font-size: 12px; font-weight: 700;
-        transition: all 0.2s;
-        white-space: nowrap;
-    " onmouseover="this.style.borderColor='#00d4aa44';this.style.color='#00d4aa'"
-       onmouseout="this.style.borderColor='#222';this.style.color='#555'">
-        📊 Progresso
-    </a>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <span id="premium-badge" style="display:none;background:#00d4aa22;border:1px solid #00d4aa44;color:#00d4aa;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;">⚡ Premium</span>
+        <a href="/progresso" style="
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #161616; border: 1px solid #222;
+            color: #555; text-decoration: none;
+            padding: 8px 14px; border-radius: 10px;
+            font-size: 12px; font-weight: 700; transition: all 0.2s; white-space: nowrap;
+        " onmouseover="this.style.borderColor='#00d4aa44';this.style.color='#00d4aa'"
+           onmouseout="this.style.borderColor='#222';this.style.color='#555'">
+            📊 Progresso
+        </a>
+        <a id="upgrade-btn" href="/upgrade" style="
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #00d4aa; color: #0d0d0d;
+            text-decoration: none; padding: 8px 14px; border-radius: 10px;
+            font-size: 12px; font-weight: 800; white-space: nowrap;
+        ">⚡ Premium</a>
+    </div>
 </div>
 
 <div class="container">
@@ -894,7 +901,7 @@
 
     <!-- TAB TEXTO -->
     <div class="card {% if modo != 'arquivo' %}active{% endif %}" id="tab-texto">
-        <form action="/buscar" method="post" id="form-prompt" onsubmit="mostrarLoading()">
+        <form action="/buscar" method="post" id="form-prompt">
             <div class="input-wrapper">
                 <span class="input-label">O que você precisa estudar?</span>
                 <textarea name="prompt" id="prompt-input" placeholder="Ex: Cálculo 1, derivadas e integrais..." required>{% if prompt %}{{ prompt }}{% endif %}</textarea>
@@ -1004,6 +1011,7 @@
     {% if diagnostico and diagnostico.temas %}
     <form action="/trilha" method="post" style="margin-bottom: 32px;" onsubmit="document.getElementById('loading').classList.add('visible')">
         <input type="hidden" name="temas_json" id="temas_json_input">
+        <input type="hidden" name="token" id="token_input_trilha">
         <button type="submit" onclick="prepararTrilha()" style="
             width: 100%;
             background: linear-gradient(135deg, #0a1f1a, #0d2d22);
@@ -1172,13 +1180,51 @@
 </div>
 
 <script>
-    // Prepara os temas do diagnóstico para envio ao endpoint /trilha
+    // Prepara os temas + token para a trilha
     function prepararTrilha() {
         const temas = {{ diagnostico.temas | tojson if diagnostico and diagnostico.temas else '[]' }};
         document.getElementById('temas_json_input').value = JSON.stringify(temas);
+        document.getElementById('token_input_trilha').value = localStorage.getItem('studyai_token') || '';
         document.getElementById('loading-msg').textContent = 'Montando sua trilha...';
         document.getElementById('loading-sub').textContent = 'Buscando vídeos para cada etapa de estudo';
     }
+
+    // Verifica se usuário é premium
+    function isPremium() {
+        return !!localStorage.getItem('studyai_token');
+    }
+
+    // Limite de diagnósticos free (3/mês)
+    function verificarLimiteDiag() {
+        if (isPremium()) return true;
+        const key = 'studyai_diag_' + new Date().toISOString().slice(0, 7);
+        const usos = parseInt(localStorage.getItem(key) || '0');
+        return usos < 3;
+    }
+    function incrementarDiag() {
+        const key = 'studyai_diag_' + new Date().toISOString().slice(0, 7);
+        const usos = parseInt(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, usos + 1);
+    }
+
+    // Intercepta formulários de busca
+    document.getElementById('form-prompt')?.addEventListener('submit', function(e) {
+        if (!verificarLimiteDiag()) {
+            e.preventDefault();
+            window.location.href = '/upgrade';
+            return;
+        }
+        incrementarDiag();
+        mostrarLoading();
+    });
+    document.querySelector('form[action="/analisar"]')?.addEventListener('submit', function(e) {
+        if (!verificarLimiteDiag()) {
+            e.preventDefault();
+            window.location.href = '/upgrade';
+            return;
+        }
+        incrementarDiag();
+    });
 
     function trocarTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1309,6 +1355,12 @@
         }
     })();
     {% endif %}
+
+    // Mostra/oculta badge premium
+    if (isPremium()) {
+        document.getElementById('premium-badge').style.display = 'inline-flex';
+        document.getElementById('upgrade-btn').style.display = 'none';
+    }
 
     // Chama ao carregar
     atualizarPainel();
