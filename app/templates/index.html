@@ -3,249 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyAI — Encontre os melhores vídeos para estudar</title>
+    <title>StudyAI</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; min-height: 100vh; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d0d0d;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
 
         /* HEADER */
         .header {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            padding: 48px 24px 40px;
+            padding: 48px 24px 36px;
             text-align: center;
+            border-bottom: 1px solid #1e1e1e;
         }
-        .header .badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #a78bfa;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
         }
-        .header h1 { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; }
-        .header h1 span { color: #818cf8; }
-        .header p { color: #94a3b8; font-size: 17px; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+        .logo span { color: #00d4aa; }
+        .tagline { color: #666; font-size: 15px; }
 
         /* CONTAINER */
-        .container { max-width: 840px; margin: 0 auto; padding: 40px 20px 60px; }
+        .container { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
 
         /* TABS */
         .tabs {
             display: flex;
-            background: white;
-            border-radius: 14px;
-            padding: 6px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
             gap: 4px;
         }
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 10px 16px;
             border: none;
             background: transparent;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { background: #1e1e1e; color: #e8e8e8; }
+        .tab-btn:hover:not(.active) { color: #999; }
+
+        /* CARD */
+        .card { display: none; }
+        .card.active { display: block; }
+
+        /* INPUT AREA */
+        .input-wrapper {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 20px;
+            transition: border-color 0.2s;
+        }
+        .input-wrapper:focus-within { border-color: #00d4aa33; }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-family: inherit;
+            color: #e8e8e8;
+            resize: none;
+            height: 100px;
+            line-height: 1.6;
+        }
+        textarea::placeholder { color: #333; }
+
+        .input-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #1e1e1e;
+        }
+        .input-hint { font-size: 12px; color: #333; }
+
+        .btn-send {
+            background: #00d4aa;
+            color: #0d0d0d;
+            border: none;
+            padding: 10px 24px;
             border-radius: 10px;
             font-size: 14px;
-            font-weight: 600;
-            color: #64748b;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
-        .tab-btn.active {
-            background: linear-gradient(135deg, #302b63, #24243e);
-            color: white;
-            box-shadow: 0 2px 8px rgba(48,43,99,0.3);
-        }
-        .tab-btn:hover:not(.active) { background: #f1f5f9; color: #1a1a2e; }
+        .btn-send:hover { background: #00bfa0; transform: translateY(-1px); }
+        .btn-send:active { transform: translateY(0); }
+        .btn-send svg { width: 16px; height: 16px; }
 
-        /* CARDS */
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-            display: none;
-        }
-        .card.active { display: block; }
-
-        /* PROMPT SECTION */
-        .prompt-label { font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 10px; display: block; }
-        .prompt-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-        .example-chip {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            color: #475569;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .example-chip:hover { background: #e0e7ff; border-color: #818cf8; color: #4338ca; }
-
-        textarea {
-            width: 100%;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 15px;
-            font-family: inherit;
-            color: #1a1a2e;
-            resize: none;
-            height: 110px;
-            transition: border-color 0.2s;
-            outline: none;
-            line-height: 1.5;
-        }
-        textarea:focus { border-color: #818cf8; }
-        textarea::placeholder { color: #94a3b8; }
-
-        /* UPLOAD SECTION */
+        /* UPLOAD */
         .upload-area {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 36px 20px;
+            border: 1px dashed #222;
+            border-radius: 16px;
+            padding: 48px 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
-            background: #f8fafc;
-            margin-bottom: 16px;
+            background: #161616;
         }
-        .upload-area:hover { border-color: #818cf8; background: #f5f3ff; }
-        .upload-area.dragover { border-color: #302b63; background: #ede9fe; }
-        .upload-icon { font-size: 36px; margin-bottom: 10px; }
-        .upload-area p { color: #64748b; font-size: 14px; }
-        .upload-area strong { color: #1a1a2e; }
-        .upload-area .file-types { color: #94a3b8; font-size: 12px; margin-top: 4px; }
+        .upload-area:hover { border-color: #00d4aa55; background: #161616; }
+        .upload-area.dragover { border-color: #00d4aa; }
+        .upload-icon { font-size: 32px; margin-bottom: 12px; }
+        .upload-area p { color: #555; font-size: 14px; }
+        .upload-area strong { color: #999; }
+        .upload-area .types { color: #333; font-size: 12px; margin-top: 6px; }
         input[type="file"] { display: none; }
 
-        .file-selected {
+        .file-ok {
             display: none;
             align-items: center;
             gap: 10px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            background: #0a1f1a;
+            border: 1px solid #00d4aa33;
             border-radius: 10px;
             padding: 12px 16px;
-            margin-bottom: 16px;
+            margin-top: 12px;
         }
-        .file-selected.visible { display: flex; }
-        .file-selected span:last-child { font-size: 14px; color: #166534; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-ok.visible { display: flex; }
+        .file-ok span { font-size: 14px; color: #00d4aa; }
 
-        /* BUTTON */
-        .btn-primary {
+        .btn-upload {
             width: 100%;
-            background: linear-gradient(135deg, #302b63, #24243e);
-            color: white;
+            background: #00d4aa;
+            color: #0d0d0d;
             border: none;
-            padding: 16px;
+            padding: 14px;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 16px;
             transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(48,43,99,0.35);
-            letter-spacing: 0.3px;
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(48,43,99,0.45); }
-        .btn-primary:active { transform: translateY(0); }
+        .btn-upload:hover { background: #00bfa0; }
+
+        /* DIVIDER */
+        .divider { height: 1px; background: #1a1a1a; margin: 40px 0; }
+
+        /* TOPICOS */
+        .topicos-box {
+            background: #161616;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .topicos-box .label { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; font-weight: 600; }
+        .topico-tag {
+            display: inline-block;
+            background: #0a1f1a;
+            color: #00d4aa;
+            border: 1px solid #00d4aa22;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 13px;
+        }
 
         /* RESULTS */
-        .results-header {
+        .results-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 36px 0 20px;
         }
-        .results-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; }
-        .results-count { background: #ede9fe; color: #5b21b6; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-
-        .topicos-box {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-        }
-        .topicos-box h3 { font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-        .topico-tag {
-            display: inline-block;
-            background: #ede9fe;
-            color: #5b21b6;
-            border: 1px solid #ddd6fe;
-            padding: 6px 16px;
+        .results-count {
+            background: #00d4aa15;
+            color: #00d4aa;
+            padding: 3px 10px;
             border-radius: 20px;
-            margin: 4px;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
         }
 
         .video-card {
-            background: white;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            background: #161616;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
             display: flex;
             gap: 16px;
             align-items: flex-start;
             transition: all 0.2s;
-            border: 1px solid #f1f5f9;
         }
-        .video-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); border-color: #e0e7ff; }
+        .video-card:hover { border-color: #2a2a2a; background: #1a1a1a; }
         .video-card img {
-            width: 156px;
-            min-width: 156px;
-            height: 88px;
-            border-radius: 10px;
+            width: 148px;
+            min-width: 148px;
+            height: 84px;
+            border-radius: 8px;
             object-fit: cover;
         }
-        .video-info { flex: 1; }
+        .video-info { flex: 1; min-width: 0; }
         .topico-label {
             display: inline-block;
-            background: #302b63;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 8px;
+            background: #1a1a1a;
+            color: #555;
+            border: 1px solid #222;
+            padding: 2px 10px;
+            border-radius: 6px;
             font-size: 11px;
-            font-weight: 600;
             margin-bottom: 8px;
-            letter-spacing: 0.3px;
         }
-        .video-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 5px; line-height: 1.4; color: #1a1a2e; }
-        .video-info .canal { color: #94a3b8; font-size: 13px; margin-bottom: 12px; }
+        .video-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #e8e8e8;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .canal { color: #444; font-size: 12px; margin-bottom: 12px; }
         .btn-assistir {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #ff0000;
-            color: white;
-            padding: 7px 16px;
+            background: #1a0000;
+            color: #ff4444;
+            border: 1px solid #ff444422;
+            padding: 6px 14px;
             border-radius: 8px;
             text-decoration: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        .btn-assistir:hover { background: #cc0000; }
+        .btn-assistir:hover { background: #ff0000; color: white; border-color: #ff0000; }
 
         /* LOADING */
         .loading-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15,12,41,0.88);
+            inset: 0;
+            background: rgba(13,13,13,0.92);
             z-index: 100;
             justify-content: center;
             align-items: center;
@@ -254,80 +283,77 @@
         }
         .loading-overlay.visible { display: flex; }
         .spinner {
-            width: 56px; height: 56px;
-            border: 4px solid rgba(255,255,255,0.15);
-            border-top-color: #818cf8;
+            width: 44px; height: 44px;
+            border: 3px solid #1e1e1e;
+            border-top-color: #00d4aa;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-overlay p { color: white; font-size: 18px; font-weight: 700; }
-        .loading-overlay small { color: #94a3b8; font-size: 13px; text-align: center; max-width: 280px; }
+        .loading-overlay p { color: #e8e8e8; font-size: 16px; font-weight: 600; }
+        .loading-overlay small { color: #444; font-size: 13px; }
 
         @media (max-width: 600px) {
-            .header h1 { font-size: 30px; }
+            .header { padding: 32px 20px 24px; }
             .video-card { flex-direction: column; }
-            .video-card img { width: 100%; min-width: unset; height: 180px; }
-            .card { padding: 20px 16px; }
+            .video-card img { width: 100%; min-width: unset; height: 170px; }
         }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="badge">✨ IA para estudantes</div>
-    <h1>Study<span>AI</span></h1>
-    <p>Mande sua prova, foto do caderno ou descreva o que precisa estudar — a IA encontra os melhores vídeos pra você</p>
+    <div class="logo">Study<span>AI</span></div>
+    <p class="tagline">IA que encontra os melhores vídeos para o que você precisa estudar</p>
 </div>
 
 <div class="container">
 
-    <!-- TABS -->
     <div class="tabs">
-        <button class="tab-btn {% if modo != 'arquivo' %}active{% endif %}" onclick="trocarTab('texto')">
-            💬 Digitar o que preciso estudar
-        </button>
-        <button class="tab-btn {% if modo == 'arquivo' %}active{% endif %}" onclick="trocarTab('arquivo')">
-            📎 Enviar arquivo ou foto
-        </button>
+        <button class="tab-btn {% if modo != 'arquivo' %}active{% endif %}" onclick="trocarTab('texto')">💬 Digitar</button>
+        <button class="tab-btn {% if modo == 'arquivo' %}active{% endif %}" onclick="trocarTab('arquivo')">📎 Enviar arquivo</button>
     </div>
 
-    <!-- TAB: TEXTO -->
+    <!-- TAB TEXTO -->
     <div class="card {% if modo != 'arquivo' %}active{% endif %}" id="tab-texto">
         <form action="/buscar" method="post" id="form-prompt" onsubmit="mostrarLoading()">
-            <label class="prompt-label">O que você precisa estudar?</label>
-            <div class="prompt-examples">
-                <span class="example-chip" onclick="preencherPrompt('Amanhã tenho prova de Cálculo 1, derivadas e integrais')">📐 Cálculo 1</span>
-                <span class="example-chip" onclick="preencherPrompt('Preciso aprender Contabilidade Básica, balanço patrimonial e DRE')">📊 Contabilidade</span>
-                <span class="example-chip" onclick="preencherPrompt('Tenho prova de Microeconomia, oferta e demanda')">📈 Microeconomia</span>
-                <span class="example-chip" onclick="preencherPrompt('Preciso estudar Direito Constitucional para concurso')">⚖️ Direito</span>
+            <div class="input-wrapper">
+                <span class="input-label">O que você precisa estudar?</span>
+                <textarea name="prompt" id="prompt-input" placeholder="Ex: Amanhã tenho prova de Cálculo 1, derivadas e integrais. Me mande os melhores vídeos." required>{% if prompt %}{{ prompt }}{% endif %}</textarea>
+                <div class="input-footer">
+                    <span class="input-hint">Seja específico para melhores resultados</span>
+                    <button type="submit" class="btn-send">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        Buscar vídeos
+                    </button>
+                </div>
             </div>
-            <textarea name="prompt" id="prompt-input" placeholder="Ex: Amanhã tenho prova de Cálculo 1, derivadas e integrais. Me mande os melhores vídeos pra estudar hoje." required>{% if prompt %}{{ prompt }}{% endif %}</textarea>
-            <button type="submit" class="btn-primary">🔍 Encontrar os melhores vídeos</button>
         </form>
     </div>
 
-    <!-- TAB: ARQUIVO -->
+    <!-- TAB ARQUIVO -->
     <div class="card {% if modo == 'arquivo' %}active{% endif %}" id="tab-arquivo">
-        <form action="/analisar" method="post" enctype="multipart/form-data" id="form-upload" onsubmit="mostrarLoading()">
+        <form action="/analisar" method="post" enctype="multipart/form-data" onsubmit="mostrarLoading()">
             <input type="file" name="arquivo" id="arquivo" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
             <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
                 <div class="upload-icon">📄</div>
                 <p><strong>Clique aqui</strong> ou arraste seu arquivo</p>
-                <p class="file-types">PDF, JPG, PNG, WEBP — até 10MB</p>
+                <p class="types">PDF · JPG · PNG · até 10MB</p>
             </div>
-            <div class="file-selected" id="file-selected">
-                <span>✅</span>
+            <div class="file-ok" id="file-ok">
                 <span id="file-name"></span>
             </div>
-            <button type="submit" class="btn-primary">🔍 Analisar e encontrar vídeos</button>
+            <button type="submit" class="btn-upload">Analisar e encontrar vídeos</button>
         </form>
     </div>
 
-    <!-- RESULTADOS -->
+    {% if topicos or videos %}
+    <div class="divider"></div>
+    {% endif %}
+
     {% if topicos %}
     <div class="topicos-box">
-        <h3>🎯 Tópicos identificados</h3>
+        <div class="label">Tópicos identificados</div>
         {% for topico in topicos %}
         <span class="topico-tag">{{ topico }}</span>
         {% endfor %}
@@ -335,8 +361,8 @@
     {% endif %}
 
     {% if videos %}
-    <div class="results-header">
-        <h2>▶️ Melhores vídeos para estudar</h2>
+    <div class="results-title">
+        <span>Melhores vídeos para estudar</span>
         <span class="results-count">{{ videos|length }} vídeos</span>
     </div>
     {% for video in videos %}
@@ -346,7 +372,7 @@
             <span class="topico-label">{{ video.topico }}</span>
             <h3>{{ video.titulo }}</h3>
             <p class="canal">{{ video.canal }}</p>
-            <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ Assistir no YouTube</a>
+            <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ YouTube</a>
         </div>
     </div>
     {% endfor %}
@@ -354,11 +380,10 @@
 
 </div>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
-    <p>Analisando com IA...</p>
-    <small>Extraindo tópicos e buscando os melhores vídeos para você</small>
+    <p>Buscando com IA...</p>
+    <small>Isso leva alguns segundos</small>
 </div>
 
 <script>
@@ -374,41 +399,32 @@
         }
     }
 
-    function preencherPrompt(texto) {
-        document.getElementById('prompt-input').value = texto;
-        document.getElementById('prompt-input').focus();
-    }
-
     function mostrarLoading() {
         document.getElementById('loading').classList.add('visible');
     }
 
     const input = document.getElementById('arquivo');
     const uploadArea = document.getElementById('upload-area');
-    const fileSelected = document.getElementById('file-selected');
+    const fileOk = document.getElementById('file-ok');
     const fileName = document.getElementById('file-name');
 
     if (input) {
         input.addEventListener('change', () => {
             if (input.files[0]) {
-                fileName.textContent = input.files[0].name;
-                fileSelected.classList.add('visible');
-                uploadArea.style.borderColor = '#818cf8';
+                fileName.textContent = '✓ ' + input.files[0].name;
+                fileOk.classList.add('visible');
+                uploadArea.style.borderColor = '#00d4aa';
             }
         });
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-        uploadArea.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', e => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             if (e.dataTransfer.files[0]) {
                 input.files = e.dataTransfer.files;
-                fileName.textContent = e.dataTransfer.files[0].name;
-                fileSelected.classList.add('visible');
+                fileName.textContent = '✓ ' + e.dataTransfer.files[0].name;
+                fileOk.classList.add('visible');
             }
         });
     }
