@@ -402,7 +402,48 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .canal { color: #444; font-size: 12px; margin-bottom: 12px; }
+        .canal { color: #444; font-size: 12px; margin-bottom: 8px; }
+
+        .video-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 8px;
+        }
+        .score-high { background: #0a1f1a; color: #00d4aa; border: 1px solid #00d4aa33; }
+        .score-mid  { background: #1f1a0a; color: #f59e0b; border: 1px solid #f59e0b33; }
+        .score-low  { background: #1a1a1a; color: #555;    border: 1px solid #333; }
+
+        .tipo-video-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tempo-util-badge { font-size: 11px; color: #333; }
+
+        .video-motivo {
+            font-size: 11px;
+            color: #444;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
         .btn-assistir {
             display: inline-flex;
             align-items: center;
@@ -755,6 +796,22 @@
             <span class="topico-label">{{ video.topico }}</span>
             <h3>{{ video.titulo }}</h3>
             <p class="canal">{{ video.canal }}</p>
+            <div class="video-meta-row">
+                {% if video.score %}
+                <span class="score-badge {% if video.score >= 75 %}score-high{% elif video.score >= 50 %}score-mid{% else %}score-low{% endif %}">
+                    {{ video.score }}% match
+                </span>
+                {% endif %}
+                {% if video.tipo_video %}
+                <span class="tipo-video-badge">{{ video.tipo_video }}</span>
+                {% endif %}
+                {% if video.tempo_util %}
+                <span class="tempo-util-badge">⏱ {{ video.tempo_util }}</span>
+                {% endif %}
+            </div>
+            {% if video.motivo %}
+            <p class="video-motivo">"{{ video.motivo }}"</p>
+            {% endif %}
             <a href="{{ video.url }}" target="_blank" class="btn-assistir">▶ YouTube</a>
         </div>
     </div>

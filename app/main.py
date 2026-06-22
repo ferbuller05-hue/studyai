@@ -42,7 +42,7 @@ async def analisar(request: Request, arquivo: UploadFile = File(...)):
     if not temas_prioritarios:
         temas_prioritarios = [t["nome"] for t in diagnostico.get("temas", [])][:5]
 
-    videos = buscar_videos_por_topicos(temas_prioritarios) if temas_prioritarios else []
+    videos = buscar_videos_por_topicos(temas_prioritarios, temas_info=diagnostico.get("temas", [])) if temas_prioritarios else []
 
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -64,7 +64,7 @@ async def buscar(request: Request, prompt: str = Form(...)):
     if not temas_prioritarios:
         temas_prioritarios = [t["nome"] for t in diagnostico.get("temas", [])][:5]
 
-    videos = buscar_videos_por_topicos(temas_prioritarios) if temas_prioritarios else []
+    videos = buscar_videos_por_topicos(temas_prioritarios, temas_info=diagnostico.get("temas", [])) if temas_prioritarios else []
 
     return templates.TemplateResponse("index.html", {
         "request": request,
