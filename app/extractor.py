@@ -198,10 +198,34 @@ Regras:
         }
 
 
-def gerar_estrutura_trilha(temas: list) -> dict:
-    """Gera a trilha de aprendizado estruturada a partir dos temas do diagnóstico."""
+def gerar_estrutura_trilha(temas: list, perfil: dict = None) -> dict:
+    """Gera trilha personalizada. Se perfil fornecido, adapta ao histórico do aluno."""
     import json
     temas_str = json.dumps(temas, ensure_ascii=False, indent=2)
+
+    # Prepara contexto do perfil para personalização
+    perfil_ctx = ""
+    if perfil and perfil.get("temas"):
+        temas_perfil = perfil["temas"]
+        concluidos = [t for t, d in temas_perfil.items() if d.get("concluido")]
+        baixo_dominio = [(t, d["dominio"]) for t, d in temas_perfil.items()
+                         if not d.get("concluido") and d.get("dominio", 0) < 60]
+        erros = {t: d.get("padroes_erro", []) for t, d in temas_perfil.items() if d.get("padroes_erro")}
+        velocidade = {t: d.get("velocidade", "") for t, d in temas_perfil.items() if d.get("velocidade")}
+
+        partes = []
+        if concluidos:
+            partes.append(f"Temas já dominados (pular ou revisar rápido): {', '.join(concluidos)}")
+        if baixo_dominio:
+            partes.append(f"Temas com baixo domínio (priorizar): {', '.join([f'{t} ({d}%)' for t, d in baixo_dominio])}")
+        if erros:
+            for t, e in erros.items():
+                if e: partes.append(f"Erros recorrentes em {t}: {', '.join(e[:2])}")
+        if velocidade:
+            for t, v in velocidade.items():
+                if v: partes.append(f"Velocidade de aprendizado em {t}: {v}")
+        if partes:
+            perfil_ctx = "\n\nPerfil do aluno (use para personalizar):\n" + "\n".join(f"- {p}" for p in partes)
 
     resposta = client.messages.create(
         model="claude-haiku-4-5",
@@ -211,7 +235,7 @@ def gerar_estrutura_trilha(temas: list) -> dict:
             "content": f"""Você é um especialista em educação. Crie uma trilha de aprendizado personalizada.
 
 Temas identificados no diagnóstico:
-{temas_str}
+{temas_str}{perfil_ctx}
 
 Retorne APENAS um JSON válido neste formato:
 {{

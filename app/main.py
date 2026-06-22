@@ -81,7 +81,8 @@ async def buscar(request: Request, prompt: str = Form(...)):
 
 @app.post("/trilha", response_class=HTMLResponse)
 async def trilha(request: Request, temas_json: str = Form(...),
-                 token: str = Form(default="")):
+                 token: str = Form(default=""),
+                 perfil_json: str = Form(default="")):
     # ── PAYWALL ──
     if not is_premium(token):
         return templates.TemplateResponse("upgrade.html", {
@@ -90,7 +91,8 @@ async def trilha(request: Request, temas_json: str = Form(...),
         })
 
     temas = json.loads(temas_json)
-    estrutura = gerar_estrutura_trilha(temas)
+    perfil = json.loads(perfil_json) if perfil_json else None
+    estrutura = gerar_estrutura_trilha(temas, perfil=perfil)
     videos_trilha = buscar_videos_trilha(estrutura.get("etapas", []))
 
     return templates.TemplateResponse("trilha.html", {

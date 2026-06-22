@@ -1628,6 +1628,7 @@
     <form action="/trilha" method="post" style="margin-bottom: 32px;" onsubmit="document.getElementById('loading').classList.add('visible')">
         <input type="hidden" name="temas_json" id="temas_json_input">
         <input type="hidden" name="token" id="token_input_trilha">
+        <input type="hidden" name="perfil_json" id="perfil_json_trilha">
         <button type="submit" onclick="prepararTrilha()" style="
             width: 100%;
             background: linear-gradient(135deg, #0a1f1a, #0d2d22);
@@ -1849,13 +1850,16 @@
 </div>
 
 <script>
-    // Prepara os temas + token para a trilha
+    // Prepara os temas + token + perfil para a trilha (personalização adaptativa)
     function prepararTrilha() {
         const temas = {{ diagnostico.temas | tojson if diagnostico and diagnostico.temas else '[]' }};
         document.getElementById('temas_json_input').value = JSON.stringify(temas);
         document.getElementById('token_input_trilha').value = localStorage.getItem('studyai_token') || '';
-        document.getElementById('loading-msg').textContent = 'Montando sua trilha...';
-        document.getElementById('loading-sub').textContent = 'Buscando vídeos para cada etapa de estudo';
+        // Envia perfil para a trilha ser adaptada ao histórico do aluno
+        const perfilEl = document.getElementById('perfil_json_trilha');
+        if (perfilEl) perfilEl.value = JSON.stringify(getPerfil());
+        document.getElementById('loading-msg').textContent = 'Montando sua trilha personalizada...';
+        document.getElementById('loading-sub').textContent = 'Adaptando ao seu histórico de aprendizado';
     }
 
     // Verifica se usuário é premium
@@ -1976,20 +1980,94 @@
         return div;
     }
 
-    // ── PERFIL DO ALUNO (localStorage) ──
+    // ── PERFIL DO ALUNO v2 (localStorage) ──
     const PERFIL_KEY = 'studyai_perfil';
 
     function getPerfil() {
-        try { return JSON.parse(localStorage.getItem(PERFIL_KEY)) || { temas: {} }; }
-        catch { return { temas: {} }; }
+        try {
+            const raw = JSON.parse(localStorage.getItem(PERFIL_KEY));
+            // Migra perfil v1 para v2 se necessário
+            if (raw && !raw.versao) {
+                raw.versao = "2.0";
+                raw.criado_em = new Date().toISOString().slice(0,10);
+                raw.preferencias = {};
+                raw.estatisticas = { total_sessoes: 0, temas_dominados: 0 };
+                // Migra temas para estrutura v2
+                for (const t in raw.temas || {}) {
+                    const d = raw.temas[t];
+                    raw.temas[t] = {
+                        dominio: d.dominio || 0,
+                        sessoes: d.sessoes || 0,
+                        padroes_erro: d.padroes || [],
+                        concluido: (d.dominio || 0) >= 90,
+                        velocidade: "média",
+                        historico: [],
+                        proxima_revisao: null,
+                        ultima_sessao: null
+                    };
+                }
+                salvarPerfil(raw);
+            }
+            return raw || perfilVazio();
+        } catch { return perfilVazio(); }
+    }
+
+    function perfilVazio() {
+        return {
+            versao: "2.0",
+            criado_em: new Date().toISOString().slice(0,10),
+            ultima_sessao: null,
+            temas: {},
+            preferencias: {},
+            estatisticas: { total_sessoes: 0, temas_dominados: 0 }
+        };
     }
 
     function salvarPerfil(perfil) {
+        perfil.ultima_sessao = new Date().toISOString().slice(0,10);
+        // Recalcula estatísticas
+        const ts = Object.values(perfil.temas || {});
+        perfil.estatisticas = {
+            total_sessoes: ts.reduce((a, t) => a + (t.sessoes || 0), 0),
+            temas_dominados: ts.filter(t => t.concluido).length
+        };
         localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
     }
 
-    function getDominio(tema) {
-        return getPerfil().temas[tema]?.dominio || 0;
+    function atualizarTema(perfil, nome, dados) {
+        const hoje = new Date().toISOString().slice(0,10);
+        if (!perfil.temas[nome]) {
+            perfil.temas[nome] = {
+                dominio: 0, sessoes: 0, padroes_erro: [],
+                concluido: false, velocidade: "média",
+                historico: [], proxima_revisao: null, ultima_sessao: null
+            };
+        }
+        const t = perfil.temas[nome];
+
+        // Registra entrada no histórico de evolução
+        t.historico = t.historico || [];
+        t.historico.push({
+            data: hoje,
+            dominio: dados.novo_dominio,
+            entendimento: dados.entendimento_declarado || 0
+        });
+        if (t.historico.length > 20) t.historico = t.historico.slice(-20);
+
+        // Atualiza campos
+        t.dominio = dados.novo_dominio;
+        t.sessoes = (t.sessoes || 0) + 1;
+        t.concluido = dados.concluido || false;
+        t.velocidade = dados.velocidade || t.velocidade || "média";
+        t.proxima_revisao = dados.proxima_revisao || null;
+        t.ultima_sessao = hoje;
+
+        // Atualiza padrões de erro (sem duplicatas, máx 10)
+        if (dados.padroes?.length) {
+            t.padroes_erro = [...new Set([...(t.padroes_erro || []), ...dados.padroes])].slice(-10);
+        }
+
+        return perfil;
     }
 
     function atualizarPainel() {
@@ -1999,14 +2077,24 @@
         const container = document.getElementById('progresso-temas');
         if (!temas.length) return;
         btn.classList.add('visible');
+        const hoje = new Date().toISOString().slice(0,10);
         container.innerHTML = temas.map(tema => {
-            const d = perfil.temas[tema].dominio || 0;
+            const t = perfil.temas[tema];
+            const d = t.dominio || 0;
+            const revisaoUrgente = t.proxima_revisao && t.proxima_revisao <= hoje && !t.concluido;
             return `<div class="progresso-tema">
-                <div class="progresso-tema-nome">${tema}</div>
+                <div class="progresso-tema-nome">
+                    ${t.concluido ? '✅ ' : revisaoUrgente ? '⚠️ ' : ''}${tema}
+                    ${t.velocidade === 'rápida' ? ' ⚡' : ''}
+                </div>
                 <div class="progresso-bar-bg">
                     <div class="progresso-bar-fill" style="width:${d}%"></div>
                 </div>
-                <div class="progresso-pct">${d}% de domínio</div>
+                <div class="progresso-pct">
+                    ${d}% de domínio
+                    ${revisaoUrgente ? ' · <span style="color:#f59e0b">Revisar hoje</span>' : ''}
+                    ${t.concluido ? ' · <span style="color:#00d4aa">Concluído</span>' : ''}
+                </div>
             </div>`;
         }).join('');
     }
@@ -2121,21 +2209,23 @@
             });
             const data = await res.json();
 
-            // Atualiza perfil
-            if (!perfil.temas[feedbackTema]) perfil.temas[feedbackTema] = { dominio: 0, padroes: [], sessoes: 0 };
-            perfil.temas[feedbackTema].dominio = data.novo_dominio;
-            perfil.temas[feedbackTema].sessoes = (perfil.temas[feedbackTema].sessoes || 0) + 1;
-            if (data.padroes?.length) {
-                perfil.temas[feedbackTema].padroes = [
-                    ...new Set([...(perfil.temas[feedbackTema].padroes || []), ...data.padroes])
-                ].slice(-10);
-            }
+            // Atualiza perfil v2 com histórico, velocidade e próxima revisão
+            data.entendimento_declarado = entendimento;
+            atualizarTema(perfil, feedbackTema, data);
             salvarPerfil(perfil);
 
             // Mostra resultado
             document.getElementById('feedback-form-area').style.display = 'none';
             document.getElementById('result-dominio-num').textContent = data.novo_dominio + '%';
-            document.getElementById('result-mensagem').textContent = data.mensagem_aluno || '';
+
+            // Badge de conclusão ou revisão
+            let extra = '';
+            if (data.concluido) extra = ' ✅ Tema dominado!';
+            else if (data.proxima_revisao) extra = ` · Revisão: ${data.proxima_revisao}`;
+            if (data.velocidade && data.velocidade !== 'média')
+                extra += data.velocidade === 'rápida' ? ' ⚡ Aprendizado rápido!' : ' 📚 Continue praticando';
+
+            document.getElementById('result-mensagem').textContent = (data.mensagem_aluno || '') + extra;
             document.getElementById('result-funcionou').textContent = data.funcionou || '—';
             document.getElementById('result-nao-funcionou').textContent = data.nao_funcionou || '—';
             document.getElementById('result-proximo').textContent = data.proximo_passo || '—';

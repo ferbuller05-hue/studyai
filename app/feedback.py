@@ -24,6 +24,28 @@ def analisar_feedback(
 
     historico_str = ", ".join(historico_erros) if historico_erros else "nenhum registrado"
 
+    # Calcula velocidade de aprendizado com base no histórico
+    velocidade = "média"
+    if len(historico_erros) == 0 and dominio_atual == 0:
+        velocidade = "indefinida"
+    elif entendimento > 80 and dominio_atual < 50:
+        velocidade = "rápida"
+    elif entendimento < 60:
+        velocidade = "lenta"
+
+    # Calcula próxima revisão por repetição espaçada
+    from datetime import datetime, timedelta
+    hoje = datetime.now()
+    if dominio_atual < 50:
+        dias_revisao = 1
+    elif dominio_atual < 70:
+        dias_revisao = 3
+    elif dominio_atual < 85:
+        dias_revisao = 7
+    else:
+        dias_revisao = 14
+    proxima_revisao = (hoje + timedelta(days=dias_revisao)).strftime("%Y-%m-%d")
+
     resposta = client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=800,
@@ -71,17 +93,24 @@ Retorne APENAS o JSON."""
 
         # Garante que novo_dominio está nos limites
         resultado["novo_dominio"] = max(0, min(100, resultado.get("novo_dominio", dominio_atual)))
+        # Injeta campos calculados localmente (mais confiáveis que deixar Claude calcular)
+        resultado["proxima_revisao"] = proxima_revisao
+        resultado["velocidade"] = velocidade
+        resultado["concluido"] = resultado["novo_dominio"] >= 90
         return resultado
     except Exception:
-        # Fallback simples
         delta = 15 if entendimento > 80 else (5 if entendimento >= 60 else -5)
+        novo = max(0, min(100, dominio_atual + delta))
         return {
-            "novo_dominio": max(0, min(100, dominio_atual + delta)),
+            "novo_dominio": novo,
             "funcionou": "",
             "nao_funcionou": "",
             "padroes": [],
             "proximo_passo": "Continue estudando",
             "ajuste_trilha": "",
             "nivel_recomendado": "intermediário",
-            "mensagem_aluno": "Continue assim!"
+            "mensagem_aluno": "Continue assim!",
+            "proxima_revisao": proxima_revisao,
+            "velocidade": velocidade,
+            "concluido": novo >= 90
         }
