@@ -1,5 +1,5 @@
 import asyncio
-import hashlib, secrets, json
+import hashlib, secrets, json, logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date as dt_date
 from fastapi import FastAPI, Request, UploadFile, File, Form, Header
@@ -10,7 +10,8 @@ from app.extractor import (processar_arquivo, extrair_topicos_do_prompt,
                             diagnosticar_material, diagnosticar_material_imagem,
                             extrair_texto_pdf, extrair_texto_docx, extrair_texto_txt,
                             extrair_topicos_da_imagem, gerar_estrutura_trilha)
-from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha, buscar_e_rankear_topico
+from app.youtube import (buscar_videos_por_topicos, buscar_videos_trilha,
+                         buscar_e_rankear_topico, buscar_videos_etapa)
 from app.chat import responder
 from app.feedback import analisar_feedback
 from app.progresso import gerar_analise_progresso
@@ -19,6 +20,13 @@ from app.database import engine, Base, SessionLocal
 from app.models.onboarding import OnboardingProfile
 from app.routers import onboarding as onboarding_router
 from app.cache import cache_size
+
+# Logs visíveis no painel do Render (Admin → Logs)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+)
+logger = logging.getLogger("studyai")
 
 # Thread pool para rodar funções bloqueantes (Anthropic SDK, YouTube)
 # sem travar o event loop do FastAPI
@@ -76,6 +84,62 @@ async def _buscar_videos_paralelo(temas_prioritarios: list, temas_info: list) ->
     for r in resultados:
         if isinstance(r, list):
             videos.extend(r[:2])  # 2 melhores por tópico
+    return videos
+
+
+async def _buscar_videos_trilha_paralelo(etapas: list) -> dict:
+    """
+    Versão PARALELA de buscar_videos_trilha.
+
+    ANTES (versão sequencial): 3 etapas × 4 sessões × 2 chamadas = 24 calls síncronos = ~24-30s
+    → SEMPRE causava timeout 502 no Render (limite 30s)
+
+    DEPOIS (versão paralela): todas as chamadas ao mesmo tempo = ~2s
+    → Limitado pelo mais lento, não pela soma
+
+    Estrutura retornada: {tema: {tipo: video_dict}}
+    """
+    if not etapas:
+        return {}
+
+    loop = asyncio.get_event_loop()
+
+    # Coleta todos os pares (tema, tipo, nivel) que precisam de vídeo
+    tarefas: list[tuple[str, str, str]] = []
+    for etapa in etapas[:3]:  # máx 3 etapas para manter < 12 chamadas paralelas
+        tema = etapa.get("tema", "")
+        nivel = etapa.get("nivel", "intermediário")
+        for sessao in etapa.get("sessoes", []):
+            tipo = sessao.get("tipo", "")
+            if tema and tipo:
+                tarefas.append((tema, tipo, nivel))
+
+    logger.info(f"[ETAPA 3] Trilha: {len(tarefas)} busca(s) de vídeo em paralelo")
+
+    async def _buscar_etapa_sessao(tema: str, tipo: str, nivel: str):
+        try:
+            video = await loop.run_in_executor(
+                _executor,
+                lambda t=tema, tp=tipo, n=nivel: buscar_videos_etapa(t, tp, nivel=n)
+            )
+            return tema, tipo, video
+        except Exception as e:
+            logger.warning(f"[ETAPA 3] Vídeo falhou para {tema}/{tipo}: {e}")
+            return tema, tipo, None
+
+    resultados = await asyncio.gather(*[_buscar_etapa_sessao(t, tp, n) for t, tp, n in tarefas],
+                                      return_exceptions=True)
+
+    # Monta dict {tema: {tipo: video}}
+    videos: dict[str, dict] = {}
+    for r in resultados:
+        if isinstance(r, tuple):
+            tema, tipo, video = r
+            if video:
+                if tema not in videos:
+                    videos[tema] = {}
+                videos[tema][tipo] = video
+
     return videos
 
 
@@ -160,14 +224,64 @@ async def trilha(request: Request, temas_json: str = Form(...),
             "motivo": "A Trilha de Estudo é um recurso Premium."
         })
 
-    temas = json.loads(temas_json)
-    perfil = json.loads(perfil_json) if perfil_json else None
-    estrutura = gerar_estrutura_trilha(temas, perfil=perfil)
-    videos_trilha = buscar_videos_trilha(estrutura.get("etapas", []))
+    _trilha_vazia = {"etapas": [], "cronograma": [], "tempo_total": ""}
 
-    return templates.TemplateResponse("trilha.html", {
-        "request": request, "trilha": estrutura, "videos": videos_trilha,
-    })
+    try:
+        # ── ETAPA 1: Receber e validar dados do usuário ──
+        logger.info(f"[TRILHA ETAPA 1] temas_json recebido ({len(temas_json)} chars): {temas_json[:300]}")
+        temas = json.loads(temas_json)
+        perfil = json.loads(perfil_json) if perfil_json.strip() else None
+        logger.info(f"[TRILHA ETAPA 1] {len(temas)} tema(s) recebidos. Perfil: {'sim' if perfil else 'não'}")
+
+        if not temas:
+            logger.warning("[TRILHA ETAPA 1] Lista de temas vazia — nenhum tema para gerar trilha")
+            return templates.TemplateResponse("trilha.html", {
+                "request": request, "trilha": _trilha_vazia, "videos": {},
+                "erro": "Nenhum tema identificado. Faça o diagnóstico primeiro e tente novamente."
+            })
+
+        # ── ETAPA 2: Gerar trilha via IA ──
+        logger.info("[TRILHA ETAPA 2] Chamando Claude para gerar estrutura da trilha...")
+        loop = asyncio.get_event_loop()
+        estrutura = await loop.run_in_executor(
+            _executor,
+            lambda: gerar_estrutura_trilha(temas, perfil=perfil)
+        )
+        n_etapas = len(estrutura.get("etapas", []))
+        logger.info(f"[TRILHA ETAPA 2] Estrutura gerada: {n_etapas} etapa(s), tempo_total={estrutura.get('tempo_total', '?')}")
+
+        if n_etapas == 0:
+            logger.error(f"[TRILHA ETAPA 2] Claude retornou 0 etapas. estrutura={json.dumps(estrutura)[:500]}")
+            return templates.TemplateResponse("trilha.html", {
+                "request": request, "trilha": _trilha_vazia, "videos": {},
+                "erro": "A IA não conseguiu montar a trilha. Tente novamente em instantes."
+            })
+
+        # ── ETAPA 3: Buscar vídeos em PARALELO ──
+        logger.info(f"[TRILHA ETAPA 3] Iniciando busca paralela de vídeos para {n_etapas} etapa(s)...")
+        videos_trilha = await _buscar_videos_trilha_paralelo(estrutura.get("etapas", []))
+        temas_com_video = sum(1 for v in videos_trilha.values() if v)
+        logger.info(f"[TRILHA ETAPA 3] Vídeos encontrados para {temas_com_video}/{n_etapas} tema(s)")
+
+        # ── ETAPA 4: Retornar ao frontend ──
+        logger.info("[TRILHA ETAPA 4] Renderizando trilha.html — sucesso")
+        return templates.TemplateResponse("trilha.html", {
+            "request": request, "trilha": estrutura, "videos": videos_trilha,
+            "erro": None
+        })
+
+    except json.JSONDecodeError as e:
+        logger.error(f"[TRILHA ETAPA 1] JSON inválido recebido: {e} — temas_json={temas_json[:200]}")
+        return templates.TemplateResponse("trilha.html", {
+            "request": request, "trilha": _trilha_vazia, "videos": {},
+            "erro": "Erro ao ler os dados do diagnóstico. Volte e refaça o diagnóstico."
+        })
+    except Exception as e:
+        logger.error(f"[TRILHA ERRO] Falha inesperada: {type(e).__name__}: {e}", exc_info=True)
+        return templates.TemplateResponse("trilha.html", {
+            "request": request, "trilha": _trilha_vazia, "videos": {},
+            "erro": f"Erro interno ao gerar trilha ({type(e).__name__}). Tente novamente."
+        })
 
 
 @app.post("/chat")

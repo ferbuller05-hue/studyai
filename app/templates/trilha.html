@@ -332,6 +332,26 @@
         {% endif %}
     </div>
 
+    <!-- [ETAPA 5] ERRO: exibido quando o backend retorna erro -->
+    {% if erro %}
+    <div style="background:#1a0a0a; border:1px solid #f87171; border-radius:16px; padding:24px; margin-bottom:24px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:12px;">⚠️</div>
+        <div style="font-size:16px; font-weight:700; color:#f87171; margin-bottom:8px;">Não foi possível gerar a trilha</div>
+        <div style="font-size:13px; color:#666; margin-bottom:20px;">{{ erro }}</div>
+        <a href="/" style="display:inline-block; background:#00d4aa; color:#0d0d0d; font-weight:700; font-size:13px; padding:10px 24px; border-radius:10px; text-decoration:none;">← Voltar e tentar novamente</a>
+    </div>
+    {% endif %}
+
+    <!-- [ETAPA 5] VAZIO: trilha gerada mas sem etapas (improvável com erro handling, mas seguro) -->
+    {% if not trilha.etapas and not erro %}
+    <div style="background:#111; border:1px solid #222; border-radius:16px; padding:40px; text-align:center; color:#555;">
+        <div style="font-size:32px; margin-bottom:12px;">📭</div>
+        <div style="font-size:15px; font-weight:600; margin-bottom:8px;">Trilha vazia</div>
+        <div style="font-size:13px; margin-bottom:20px;">A IA não identificou temas suficientes. Faça um diagnóstico com mais conteúdo.</div>
+        <a href="/" style="display:inline-block; background:#00d4aa; color:#0d0d0d; font-weight:700; font-size:13px; padding:10px 24px; border-radius:10px; text-decoration:none;">← Voltar</a>
+    </div>
+    {% endif %}
+
     <!-- ETAPAS -->
     {% for etapa in trilha.etapas %}
     {% set vids_tema = videos.get(etapa.tema, {}) %}

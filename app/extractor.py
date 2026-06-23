@@ -2,9 +2,11 @@ import anthropic
 import PyPDF2
 import io
 import base64
+import logging
 from app.config import ANTHROPIC_API_KEY
 from app.cache import cache_key, get_cached, set_cached
 
+logger = logging.getLogger("studyai.extractor")
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
@@ -240,6 +242,7 @@ Regras:
 def gerar_estrutura_trilha(temas: list, perfil: dict = None) -> dict:
     """Gera trilha personalizada. Se perfil fornecido, adapta ao histórico do aluno."""
     import json
+    logger.info(f"[gerar_estrutura_trilha] Iniciando com {len(temas)} tema(s)")
     temas_str = json.dumps(temas, ensure_ascii=False, indent=2)
 
     # Prepara contexto do perfil para personalização
@@ -310,12 +313,29 @@ Regras:
 
     try:
         texto = resposta.content[0].text.strip()
-        if texto.startswith("```"):
-            texto = texto.split("```")[1]
-            if texto.startswith("json"):
-                texto = texto[4:]
-        return json.loads(texto.strip())
-    except Exception:
+        logger.info(f"[gerar_estrutura_trilha] Resposta Claude ({len(texto)} chars): {texto[:200]}")
+        # Remove blocos markdown (```json ... ``` ou ``` ... ```)
+        if "```" in texto:
+            partes = texto.split("```")
+            # Pega o primeiro bloco entre backticks
+            for parte in partes[1::2]:
+                parte_limpa = parte.strip()
+                if parte_limpa.startswith("json"):
+                    parte_limpa = parte_limpa[4:].strip()
+                if parte_limpa.startswith("{"):
+                    texto = parte_limpa
+                    break
+        # Tenta encontrar o JSON mesmo se houver texto antes
+        inicio = texto.find("{")
+        fim    = texto.rfind("}") + 1
+        if inicio >= 0 and fim > inicio:
+            texto = texto[inicio:fim]
+        resultado = json.loads(texto)
+        n = len(resultado.get("etapas", []))
+        logger.info(f"[gerar_estrutura_trilha] JSON parsed OK: {n} etapa(s)")
+        return resultado
+    except Exception as e:
+        logger.error(f"[gerar_estrutura_trilha] Falha ao parsear JSON: {e}. Texto={resposta.content[0].text[:500]}")
         return {"etapas": [], "cronograma": [], "tempo_total": ""}
 
 
