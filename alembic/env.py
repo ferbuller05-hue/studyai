@@ -14,6 +14,7 @@ if config.config_file_name is not None:
 # Importa Base e modelos para autogenerate funcionar
 from app.database import Base          # noqa: E402
 from app.models import onboarding      # noqa: E402, F401
+from app.models import cronograma      # noqa: E402, F401  ← topic_progress, schedule_plans, schedule_sessions
 
 target_metadata = Base.metadata
 
