@@ -298,6 +298,7 @@
 
         /* UPLOAD */
         .upload-area {
+            display: block;          /* label é inline por padrão — forçar block */
             border: 1px dashed #222;
             border-radius: 16px;
             padding: 48px 20px;
@@ -312,7 +313,16 @@
         .upload-area p { color: #555; font-size: 14px; }
         .upload-area strong { color: #999; }
         .upload-area .types { color: #333; font-size: 12px; margin-top: 6px; }
-        input[type="file"] { display: none; }
+        /* input file escondido — usar opacity+position em vez de display:none
+           para que .click() programático funcione em iOS Safari e Android */
+        input[type="file"] {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
 
         .file-ok {
             display: none;
@@ -1770,17 +1780,23 @@
 
     <!-- TAB ARQUIVO -->
     <div class="card {% if modo == 'arquivo' %}active{% endif %}" id="tab-arquivo">
-        <form action="/analisar" method="post" enctype="multipart/form-data" onsubmit="mostrarLoading()">
-            <input type="file" name="arquivo" id="arquivo" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
-            <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
+        <form action="/analisar" method="post" enctype="multipart/form-data" id="form-analisar">
+            <!-- Bug fix: label for="arquivo" abre o file picker nativamente em TODOS os browsers
+                 (incluindo iOS Safari e Android) sem depender de .click() via JS -->
+            <input type="file" name="arquivo" id="arquivo"
+                   accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.txt">
+            <label class="upload-area" id="upload-area" for="arquivo">
                 <div class="upload-icon">📄</div>
                 <p><strong>Clique aqui</strong> ou arraste seu arquivo</p>
-                <p class="types">PDF · JPG · PNG · até 10MB</p>
-            </div>
+                <p class="types">PDF · DOCX · TXT · JPG · PNG · até 10MB</p>
+            </label>
             <div class="file-ok" id="file-ok">
                 <span id="file-name"></span>
             </div>
-            <button type="submit" class="btn-upload">Analisar material</button>
+            <!-- Mensagens de feedback de upload -->
+            <div id="upload-msg" style="display:none; font-size:13px; padding:8px 12px;
+                 border-radius:8px; margin-bottom:12px; font-weight:600;"></div>
+            <button type="submit" class="btn-upload" id="btn-analisar">Analisar material</button>
         </form>
     </div>
 
@@ -2696,13 +2712,78 @@
         incrementarDiag();
         mostrarLoading();
     });
-    document.querySelector('form[action="/analisar"]')?.addEventListener('submit', function(e) {
+    // ── Upload: validação, mensagens amigáveis e debug logs ──────────────────
+    const FORMATOS_ACEITOS = ['pdf','jpg','jpeg','png','webp','docx','txt'];
+
+    function showUploadMsg(texto, tipo) {
+        // tipo: 'ok' | 'erro' | 'aviso'
+        const el = document.getElementById('upload-msg');
+        if (!el) return;
+        const cores = {
+            ok:    { bg: '#0a2e1a', border: '#00d4aa44', color: '#00d4aa' },
+            erro:  { bg: '#2e0a0a', border: '#f8717144', color: '#f87171' },
+            aviso: { bg: '#2e1a0a', border: '#f59e0b44', color: '#f59e0b' },
+        };
+        const c = cores[tipo] || cores.aviso;
+        el.style.cssText = `display:block; background:${c.bg}; border:1px solid ${c.border};
+            color:${c.color}; font-size:13px; padding:8px 12px; border-radius:8px;
+            margin-bottom:12px; font-weight:600;`;
+        el.textContent = texto;
+    }
+
+    function hideUploadMsg() {
+        const el = document.getElementById('upload-msg');
+        if (el) el.style.display = 'none';
+    }
+
+    document.getElementById('form-analisar')?.addEventListener('submit', function(e) {
+        const inputFile = document.getElementById('arquivo');
+        const arquivo = inputFile?.files?.[0];
+
+        // Debug log
+        console.debug('[StudyAI Upload] submit disparado', {
+            arquivo: arquivo?.name,
+            tamanho: arquivo?.size,
+            tipo: arquivo?.type,
+        });
+
+        // Sem arquivo selecionado
+        if (!arquivo) {
+            e.preventDefault();
+            showUploadMsg('⚠️ Selecione um arquivo antes de enviar.', 'aviso');
+            console.warn('[StudyAI Upload] Nenhum arquivo selecionado.');
+            return;
+        }
+
+        // Valida formato
+        const ext = arquivo.name.split('.').pop().toLowerCase();
+        if (!FORMATOS_ACEITOS.includes(ext)) {
+            e.preventDefault();
+            showUploadMsg(`❌ Formato não suportado: .${ext}. Use PDF, DOCX, TXT, JPG ou PNG.`, 'erro');
+            console.warn('[StudyAI Upload] Formato não suportado:', ext);
+            return;
+        }
+
+        // Valida tamanho (10MB)
+        if (arquivo.size > 10 * 1024 * 1024) {
+            e.preventDefault();
+            showUploadMsg('❌ Arquivo muito grande. Limite: 10MB.', 'erro');
+            console.warn('[StudyAI Upload] Arquivo muito grande:', arquivo.size);
+            return;
+        }
+
+        // Verifica limite de diagnósticos (free tier)
         if (!verificarLimiteDiag()) {
             e.preventDefault();
+            console.info('[StudyAI Upload] Limite de diagnósticos atingido, redirecionando.');
             window.location.href = '/upgrade';
             return;
         }
+
         incrementarDiag();
+        hideUploadMsg();
+        console.info('[StudyAI Upload] Enviando arquivo:', arquivo.name, `(${(arquivo.size/1024).toFixed(1)}KB)`);
+        mostrarLoading();  // só mostra loading DEPOIS de todas as validações passarem
     });
 
     function trocarTab(tab) {
@@ -2720,11 +2801,6 @@
     function mostrarLoading() {
         document.getElementById('loading').classList.add('visible');
     }
-
-    const inputFile = document.getElementById('arquivo');
-    const uploadArea = document.getElementById('upload-area');
-    const fileOk = document.getElementById('file-ok');
-    const fileName = document.getElementById('file-name');
 
     // Tópicos do diagnóstico para o chat
     let topicosAtivos = [];
@@ -3288,23 +3364,52 @@
         } catch {}
     })();
 
+    const inputFile  = document.getElementById('arquivo');
+    const uploadArea = document.getElementById('upload-area');
+    const fileOk     = document.getElementById('file-ok');
+    const fileName   = document.getElementById('file-name');
+
+    function aplicarArquivo(file) {
+        if (!file) return;
+        const ext = file.name.split('.').pop().toLowerCase();
+        console.debug('[StudyAI Upload] Arquivo selecionado:', file.name, ext, file.size);
+
+        if (!FORMATOS_ACEITOS.includes(ext)) {
+            showUploadMsg(`❌ Formato não suportado: .${ext}. Use PDF, DOCX, TXT, JPG ou PNG.`, 'erro');
+            fileOk.classList.remove('visible');
+            uploadArea.style.borderColor = '';
+            return;
+        }
+        hideUploadMsg();
+        fileName.textContent = '✓ ' + file.name;
+        fileOk.classList.add('visible');
+        uploadArea.style.borderColor = '#00d4aa';
+        showUploadMsg('✅ Arquivo pronto para envio: ' + file.name, 'ok');
+    }
+
     if (inputFile) {
         inputFile.addEventListener('change', () => {
-            if (inputFile.files[0]) {
-                fileName.textContent = '✓ ' + inputFile.files[0].name;
-                fileOk.classList.add('visible');
-                uploadArea.style.borderColor = '#00d4aa';
-            }
+            aplicarArquivo(inputFile.files[0]);
         });
-        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', e => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files[0]) {
-                inputFile.files = e.dataTransfer.files;
-                fileName.textContent = '✓ ' + e.dataTransfer.files[0].name;
-                fileOk.classList.add('visible');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                // Injeta arquivo no input via DataTransfer
+                try {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    inputFile.files = dt.files;
+                } catch (_) {
+                    // fallback: DataTransfer não suportado (Firefox antigo)
+                }
+                aplicarArquivo(file);
             }
         });
     }
