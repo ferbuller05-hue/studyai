@@ -246,6 +246,78 @@
             .missao-card { flex-direction: column; }
             .hero-stats { grid-template-columns: repeat(2,1fr); }
         }
+
+        /* ── XP / NÍVEL ──────────────────────────────────────────────────── */
+        .xp-section {
+            background: #0e0e0e; border: 1px solid #1e1e1e;
+            border-radius: 18px; padding: 18px 22px;
+            display: flex; align-items: center; gap: 18px;
+            margin-bottom: 24px;
+        }
+        .xp-nivel-badge {
+            width: 56px; height: 56px; border-radius: 14px;
+            background: #0a1f1a; border: 1px solid #00d4aa33;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; flex-shrink: 0;
+        }
+        .xp-nivel-num { font-size: 22px; font-weight: 900; color: #00d4aa; line-height: 1; }
+        .xp-nivel-txt { font-size: 9px; color: #00d4aa55; font-weight: 700; text-transform: uppercase; }
+        .xp-info { flex: 1; min-width: 0; }
+        .xp-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .xp-nome-nivel { font-size: 13px; font-weight: 700; color: #888; }
+        .xp-pts { font-size: 14px; font-weight: 900; color: #00d4aa; }
+        .xp-bar-bg { height: 8px; background: #1a1a1a; border-radius: 4px; overflow: hidden; }
+        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, #00d4aa, #00bfa0); border-radius: 4px; transition: width 1s ease; }
+        .xp-sub { font-size: 11px; color: #333; margin-top: 6px; display: flex; gap: 14px; flex-wrap: wrap; }
+        .xp-sub span { color: #444; }
+
+        /* ── BADGES ──────────────────────────────────────────────────────── */
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 10px; }
+        .badge-item {
+            background: #111; border: 1px solid #1e1e1e;
+            border-radius: 14px; padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            transition: border-color 0.2s;
+        }
+        .badge-item.earned { border-color: #00d4aa22; background: #0a1a14; }
+        .badge-item.locked { opacity: 0.3; filter: grayscale(0.8); }
+        .badge-icon { font-size: 26px; flex-shrink: 0; }
+        .badge-info { flex: 1; min-width: 0; }
+        .badge-nome { font-size: 12px; font-weight: 700; color: #ddd; margin-bottom: 2px; }
+        .badge-desc { font-size: 11px; color: #444; line-height: 1.3; }
+
+        /* ── CALENDÁRIO ──────────────────────────────────────────────────── */
+        .cal-wrap { background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 20px 24px; }
+        .cal-grid { display: flex; gap: 3px; flex-wrap: wrap; }
+        .cal-day { width: 13px; height: 13px; border-radius: 2px; background: #1a1a1a; flex-shrink: 0; }
+        .cal-day.l1 { background: #0a3326; }
+        .cal-day.l2 { background: #0f6647; }
+        .cal-day.l3 { background: #00d4aa88; }
+        .cal-day.l4 { background: #00d4aa; }
+        .cal-day.today { outline: 2px solid #00d4aa; outline-offset: 1px; border-radius: 3px; }
+        .cal-legend { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 10px; color: #333; }
+        .cal-leg-box { width: 11px; height: 11px; border-radius: 2px; }
+
+        /* ── MISSÃO XP ───────────────────────────────────────────────────── */
+        .missao-xp-prize {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #1a1a0a; border: 1px solid #f59e0b22;
+            color: #f59e0b; font-size: 11px; font-weight: 800;
+            padding: 4px 10px; border-radius: 8px;
+        }
+        .btn-missao-concluir {
+            background: #f59e0b; color: #0d0d0d;
+            border: none; padding: 12px 20px; border-radius: 12px;
+            font-size: 13px; font-weight: 800; cursor: pointer;
+            transition: background 0.2s; flex-shrink: 0; align-self: center;
+        }
+        .btn-missao-concluir:hover { background: #e08e00; }
+        .missao-concluida-tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #0a1f1a; border: 1px solid #00d4aa33;
+            color: #00d4aa; font-size: 11px; font-weight: 800;
+            padding: 4px 12px; border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -379,7 +451,7 @@ function buildTimeline(perfil) {
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
-function renderizar(analise, perfil, streakData, ob) {
+function renderizar(analise, perfil, streakData, ob, gami) {
     const container = document.getElementById('container');
     const hoje = new Date().toISOString().slice(0, 10);
     const { streak, ultima } = streakData;
@@ -474,6 +546,10 @@ function renderizar(analise, perfil, streakData, ob) {
         ? `Faltam <strong style="color:#f59e0b">${diasAteProva} dias</strong> · Meta: <strong style="color:#00d4aa">${horasMetaDia}h</strong> hoje`
         : `Meta diária: <strong style="color:#00d4aa">${horasMetaDia}h</strong> de estudo`;
 
+    // Gamification
+    gami = gami || {};
+    const missaoHoje = getMissaoHoje(ob);
+
     container.innerHTML = `
     <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <div>
@@ -526,56 +602,31 @@ function renderizar(analise, perfil, streakData, ob) {
         </div>`}
     </div>
 
+    ${renderXPBar(gami)}
+
     <!-- MISSÃO DO DIA -->
-    ${missao.tema ? `
     <div class="missao-card">
-        <div class="missao-icon">🎯</div>
+        <div class="missao-icon">${missaoHoje.concluida ? '✅' : missaoDifPendente ? '🚨' : '🎯'}</div>
         <div class="missao-body">
-            <div class="missao-label">Missão de hoje</div>
-            <div class="missao-titulo">${missao.tema}</div>
-            <div class="missao-desc">${missao.acao}</div>
+            <div class="missao-label">
+                Missão de hoje
+                ${missaoDifPendente && !missaoHoje.concluida ? '— prioridade alta' : ''}
+            </div>
+            <div class="missao-titulo">${missaoHoje.titulo || temaBaixoNome || 'Continue avançando'}</div>
+            <div class="missao-desc">${missaoHoje.desc || (temaBaixoNome
+                ? `Foque em <strong>${temaBaixoNome}</strong> — domínio atual ${temaBaixoDom}%.`
+                : 'Analise um material para receber sua missão personalizada.')}</div>
             <div class="missao-meta">
-                ${missao.tempo_estimado ? `<span class="missao-tag">⏱ ${missao.tempo_estimado}</span>` : `<span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>`}
-                ${tipoProva ? `<span class="missao-tag" style="background:#1a1a1a;color:#555;border-color:#222">📋 ${tipoProva}</span>` : ''}
-                ${missao.motivo ? `<span class="missao-tag" style="background:#1a1a1a;color:#555;border-color:#222">${missao.motivo}</span>` : ''}
-            </div>
-        </div>
-        <a href="/" class="btn-missao">Ir estudar →</a>
-    </div>` : missaoDifPendente ? `
-    <div class="missao-card">
-        <div class="missao-icon">🚨</div>
-        <div class="missao-body">
-            <div class="missao-label">Missão de hoje — prioridade alta</div>
-            <div class="missao-titulo">${missaoDifPendente.materia}</div>
-            <div class="missao-desc">
-                Você declarou <strong>dificuldade ${missaoDifPendente.nivel}</strong> nessa matéria
-                ${tipoProva ? `e ela tem peso no ${tipoProva}` : ''}.
-                ${diasAteProva > 0 ? `Com ${horasMetaDia}h/dia e ${diasAteProva} dias restantes, foque aqui agora.` : 'Comece por aqui para o maior impacto.'}
-            </div>
-            <div class="missao-meta">
-                <span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>
-                <span class="missao-tag" style="background:#1f0d0d;color:#f87171;border-color:#f8717133">🔴 Dificuldade ${missaoDifPendente.nivel}</span>
-            </div>
-        </div>
-        <a href="/" class="btn-missao">Estudar agora →</a>
-    </div>` : `
-    <div class="missao-card">
-        <div class="missao-icon">🎯</div>
-        <div class="missao-body">
-            <div class="missao-label">Missão de hoje</div>
-            <div class="missao-titulo">${temaBaixoNome || 'Continue avançando'}</div>
-            <div class="missao-desc">
-                ${temaBaixoNome
-                    ? `Foque em <strong>${temaBaixoNome}</strong> — domínio atual ${temaBaixoDom}%. ${faltaParaDominar > 0 ? `Faltam ${faltaParaDominar}% para dominar.` : 'Quase lá!'}`
-                    : 'Analise um novo material para receber sua missão personalizada.'}
-            </div>
-            <div class="missao-meta">
+                <span class="missao-xp-prize">⚡ +${missaoHoje.xp || 50} XP</span>
                 <span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>
                 ${diasAteProva > 0 ? `<span class="missao-tag" style="background:#1a1a1a;color:#f59e0b;border-color:#f59e0b22">📅 ${diasAteProva} dias</span>` : ''}
+                ${missaoHoje.concluida ? '<span class="missao-concluida-tag">✓ Concluída hoje</span>' : ''}
             </div>
         </div>
-        <a href="/" class="btn-missao">Ir estudar →</a>
-    </div>`}
+        ${missaoHoje.concluida
+            ? `<a href="/" class="btn-missao">Ir estudar →</a>`
+            : `<button class="btn-missao-concluir" onclick="concluirMissao()">✓ Concluir</button>`}
+    </div>
 
     ${(() => {
         let msg = analise.mensagem || '';
@@ -688,6 +739,9 @@ function renderizar(analise, perfil, streakData, ob) {
         </div>` : '<div></div>'}
     </div>
 
+    ${renderCalendario(perfil)}
+    ${renderBadges(gami)}
+
     <!-- TEMAS PRIORITÁRIOS (onboarding não estudados) -->
     ${sugestoes.length ? `
     <div class="section">
@@ -793,6 +847,194 @@ function renderizar(analise, perfil, streakData, ob) {
     `;
 }
 
+// ── GAMIFICAÇÃO ───────────────────────────────────────────────────────────────
+const GAMI_KEY = 'studyai_gami';
+
+const NIVEIS = [
+    { n:1, nome:'Iniciante',  min:0,    max:200  },
+    { n:2, nome:'Estudante',  min:200,  max:500  },
+    { n:3, nome:'Dedicado',   min:500,  max:1000 },
+    { n:4, nome:'Expert',     min:1000, max:2000 },
+    { n:5, nome:'Mestre',     min:2000, max:99999},
+];
+
+const BADGES_DEF = [
+    { id:'first_diag', icon:'🎯', nome:'Primeiro Passo',   desc:'Fez o primeiro diagnóstico'     },
+    { id:'streak_3',   icon:'🔥', nome:'3 Dias Seguidos',  desc:'Estudou 3 dias consecutivos'    },
+    { id:'streak_7',   icon:'🏅', nome:'7 Dias Seguidos',  desc:'Estudou 7 dias consecutivos'    },
+    { id:'streak_30',  icon:'🏆', nome:'Imparável',        desc:'30 dias consecutivos de estudo' },
+    { id:'dom_1',      icon:'💪', nome:'Primeiro Domínio', desc:'Dominou o primeiro tema'        },
+    { id:'dom_5',      icon:'⭐', nome:'Veterano',         desc:'Dominou 5 temas'                },
+    { id:'dom_10',     icon:'💎', nome:'Expert Supremo',   desc:'Dominou 10 temas'               },
+    { id:'xp_500',     icon:'🌟', nome:'500 XP',           desc:'Conquistou 500 pontos de XP'    },
+    { id:'xp_1000',    icon:'🎖', nome:'1000 XP',          desc:'Conquistou 1000 pontos de XP'   },
+    { id:'missao_7',   icon:'🧩', nome:'7 Missões',        desc:'Completou 7 missões diárias'    },
+];
+
+const MISSOES_POOL = [
+    { titulo:'Analise um material',     desc:'Faça o diagnóstico de um PDF ou foto hoje.',         xp:50  },
+    { titulo:'Revise um tema difícil',  desc:'Estude uma matéria de dificuldade alta.',            xp:80  },
+    { titulo:'Assista 2 vídeos',        desc:'Assista e avalie pelo menos 2 vídeos.',              xp:60  },
+    { titulo:'Estude por 1 hora',       desc:'Faça ao menos uma sessão sólida de estudo hoje.',    xp:40  },
+    { titulo:'Evolua um tema',          desc:'Aumente em 10% o domínio de qualquer tema.',        xp:100 },
+];
+
+function getGami() {
+    try { return JSON.parse(localStorage.getItem(GAMI_KEY) || '{}'); }
+    catch { return {}; }
+}
+function saveGami(g) { localStorage.setItem(GAMI_KEY, JSON.stringify(g)); }
+
+function calcNivel(xp) {
+    return NIVEIS.find(n => xp >= n.min && xp < n.max) || NIVEIS[NIVEIS.length-1];
+}
+
+function getMissaoHoje(ob) {
+    const g = getGami();
+    const hoje = new Date().toISOString().slice(0,10);
+    if (g.missao && g.missao.data === hoje) return g.missao;
+    let missao;
+    const mat = (ob?.materiasDificeis || []);
+    if (mat.length) {
+        missao = {
+            titulo: `Estude ${mat[0].materia}`,
+            desc: `Você tem dificuldade ${mat[0].nivel} nessa matéria${ob?.tipoProva ? ' — importante para o ' + ob.tipoProva : ''}. Dedique ${ob?.horasMetaDia || 2}h hoje.`,
+            xp: 100, data: hoje, concluida: false
+        };
+    } else {
+        const base = MISSOES_POOL[new Date().getDate() % MISSOES_POOL.length];
+        missao = { ...base, data: hoje, concluida: false };
+    }
+    g.missao = missao;
+    saveGami(g);
+    return missao;
+}
+
+function checkBadges(g, perfil, streakVal) {
+    const earned = new Set(g.badges || []);
+    const dominados = Object.values(perfil.temas || {}).filter(t => t.concluido).length;
+    if (Object.keys(perfil.temas||{}).length > 0) earned.add('first_diag');
+    if (streakVal >= 3)  earned.add('streak_3');
+    if (streakVal >= 7)  earned.add('streak_7');
+    if (streakVal >= 30) earned.add('streak_30');
+    if (dominados >= 1)  earned.add('dom_1');
+    if (dominados >= 5)  earned.add('dom_5');
+    if (dominados >= 10) earned.add('dom_10');
+    if ((g.xp||0) >= 500)  earned.add('xp_500');
+    if ((g.xp||0) >= 1000) earned.add('xp_1000');
+    if ((g.missoes_concluidas||0) >= 7) earned.add('missao_7');
+    g.badges = [...earned];
+    return g;
+}
+
+function syncXPFromPerfil(g, perfil) {
+    // Bootstrap XP para usuários sem gami ainda
+    if ((g.xp || 0) === 0) {
+        let xp = 0;
+        for (const t of Object.values(perfil.temas || {})) {
+            xp += (t.sessoes||0) * 30;
+            if (t.concluido) xp += 100;
+        }
+        g.xp = xp;
+    }
+    return g;
+}
+
+function concluirMissao() {
+    let g = getGami();
+    if (!g.missao || g.missao.concluida) return;
+    g.missao.concluida = true;
+    g.xp = (g.xp||0) + g.missao.xp;
+    g.missoes_concluidas = (g.missoes_concluidas||0) + 1;
+    g.historico_xp = g.historico_xp || [];
+    g.historico_xp.push({ data: new Date().toISOString().slice(0,10), xp: g.missao.xp, motivo: 'Missão do dia' });
+    saveGami(g);
+    inicializar();
+}
+
+function renderXPBar(g) {
+    const xp     = g.xp || 0;
+    const nivel  = calcNivel(xp);
+    const prox   = NIVEIS.find(n => n.n === nivel.n + 1);
+    const pct    = prox ? Math.round(((xp - nivel.min) / (prox.min - nivel.min)) * 100) : 100;
+    const falta  = prox ? prox.min - xp : 0;
+    const missoes = g.missoes_concluidas || 0;
+    const badges  = (g.badges||[]).length;
+    return `
+    <div class="xp-section">
+        <div class="xp-nivel-badge">
+            <div class="xp-nivel-num">${nivel.n}</div>
+            <div class="xp-nivel-txt">nível</div>
+        </div>
+        <div class="xp-info">
+            <div class="xp-top">
+                <span class="xp-nome-nivel">${nivel.nome}</span>
+                <span class="xp-pts">${xp} XP</span>
+            </div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="xp-sub">
+                ${prox ? `<span>${falta} XP para ${prox.nome}</span>` : '<span>Nível máximo atingido 🏆</span>'}
+                <span>🧩 ${missoes} missões</span>
+                <span>🏅 ${badges} badges</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderCalendario(perfil) {
+    const hoje = new Date();
+    const dias = [];
+    for (let i = 55; i >= 0; i--) {
+        const d = new Date(hoje); d.setDate(d.getDate() - i);
+        const str = d.toISOString().slice(0,10);
+        let sessoes = 0;
+        for (const t of Object.values(perfil.temas||{})) {
+            for (const h of (t.historico||[])) {
+                if (h.data === str) sessoes++;
+            }
+        }
+        dias.push({ str, sessoes, isHoje: i === 0 });
+    }
+    const cells = dias.map(d => {
+        const lvl = d.sessoes === 0 ? '' : d.sessoes === 1 ? 'l1' : d.sessoes === 2 ? 'l2' : d.sessoes >= 3 ? 'l3' : 'l4';
+        return `<div class="cal-day ${lvl} ${d.isHoje?'today':''}" title="${d.str}: ${d.sessoes} sessão(ões)"></div>`;
+    }).join('');
+    return `
+    <div class="section">
+        <div class="section-title">📅 Calendário de atividades — 56 dias</div>
+        <div class="cal-wrap">
+            <div class="cal-grid">${cells}</div>
+            <div class="cal-legend">
+                <span>Menos</span>
+                <div class="cal-leg-box" style="background:#1a1a1a"></div>
+                <div class="cal-leg-box" style="background:#0a3326"></div>
+                <div class="cal-leg-box" style="background:#0f6647"></div>
+                <div class="cal-leg-box" style="background:#00d4aa"></div>
+                <span>Mais</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderBadges(g) {
+    const earned = new Set(g.badges||[]);
+    const items = BADGES_DEF.map(b => `
+        <div class="badge-item ${earned.has(b.id)?'earned':'locked'}">
+            <div class="badge-icon">${b.icon}</div>
+            <div class="badge-info">
+                <div class="badge-nome">${b.nome}</div>
+                <div class="badge-desc">${b.desc}</div>
+            </div>
+        </div>`).join('');
+    return `
+    <div class="section">
+        <div class="section-title">🏅 Conquistas — ${earned.size} de ${BADGES_DEF.length}</div>
+        <div class="badges-grid">${items}</div>
+    </div>`;
+}
+
 // ── INICIALIZAR ────────────────────────────────────────────────────────────
 async function inicializar() {
     const perfil     = getPerfil();
@@ -801,8 +1043,16 @@ async function inicializar() {
     const diasSem    = calcularDiasSemEstudo(streakData.ultima);
     const temTemas   = Object.keys(perfil.temas || {}).length > 0;
 
+    // Sincroniza gamificação
+    let gami = getGami();
+    gami = syncXPFromPerfil(gami, perfil);
+    gami = checkBadges(gami, perfil, streakData.streak || 0);
+    // Sincroniza streak com gami
+    gami.streak = streakData.streak || 0;
+    saveGami(gami);
+
     if (!temTemas) {
-        renderizar({}, perfil, streakData, ob);
+        renderizar({}, perfil, streakData, ob, gami);
         return;
     }
 
@@ -813,13 +1063,13 @@ async function inicializar() {
             body: JSON.stringify({ perfil, streak: streakData.streak, dias_sem_estudo: diasSem })
         });
         const analise = await res.json();
-        renderizar(analise, perfil, streakData, ob);
+        renderizar(analise, perfil, streakData, ob, gami);
     } catch {
         renderizar({
             proxima_missao: {}, revisoes_agendadas: [],
             principais_dificuldades: [], ranking_dominio: [],
             mensagem: 'Continue estudando — cada sessão conta.', alerta: null
-        }, perfil, streakData, ob);
+        }, perfil, streakData, ob, gami);
     }
 }
 

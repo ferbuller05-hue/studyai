@@ -230,12 +230,44 @@
 
 <div class="container">
 
+    <!-- RETENÇÃO: card dinâmico com streak/XP (preenchido por JS) -->
+    <div id="retencao-card" style="display:none;background:linear-gradient(135deg,#0a1a14,#111);
+        border:1px solid #00d4aa33;border-radius:20px;padding:24px 28px;
+        margin-bottom:32px;display:none;align-items:center;gap:20px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+            <div style="font-size:11px;font-weight:800;color:#00d4aa;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                Não perca o que você conquistou
+            </div>
+            <div style="font-size:18px;font-weight:900;color:#f0f0f0;margin-bottom:6px;" id="ret-titulo">
+                Você tem 0 dias de streak
+            </div>
+            <div style="font-size:13px;color:#555;line-height:1.5;" id="ret-sub">
+                Seu progresso está salvo. Assine para não perder a sequência.
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-shrink:0;">
+            <div style="text-align:center;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:12px 16px;">
+                <div style="font-size:24px;font-weight:900;color:#f59e0b;" id="ret-streak">0</div>
+                <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;">streak</div>
+            </div>
+            <div style="text-align:center;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:12px 16px;">
+                <div style="font-size:24px;font-weight:900;color:#00d4aa;" id="ret-xp">0</div>
+                <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;">XP</div>
+            </div>
+            <div style="text-align:center;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:12px 16px;">
+                <div style="font-size:24px;font-weight:900;color:#4ade80;" id="ret-badges">0</div>
+                <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;">badges</div>
+            </div>
+        </div>
+    </div>
+
     <!-- HERO -->
     <div class="hero">
         <div class="hero-badge">⚡ Passe de aluno para aprovado</div>
-        <h1>Você já sabe o que vai cair.<br>Agora é hora de <em>dominar.</em></h1>
+        <h1>Sua trilha está pronta.<br>🔒 <em>Desbloqueie agora.</em></h1>
         <div class="hero-sub">
-            O diagnóstico te mostrou o mapa. A trilha Premium leva até a aprovação — com o plano certo, os vídeos certos e o tempo certo.
+            Cronograma · Revisões · IA · Progresso.<br>
+            Tudo que você precisa para chegar na prova preparado.
         </div>
         {% if motivo %}
         <div class="motivo-lock show">🔒 {{ motivo }}</div>
@@ -515,6 +547,36 @@ function toggleFaq(el) {
 document.getElementById('token-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') ativarToken();
 });
+
+// ── CARD DE RETENÇÃO ─────────────────────────────────────────────────────────
+(function mostrarRetencao() {
+    try {
+        const g = JSON.parse(localStorage.getItem('studyai_gami') || '{}');
+        const s = JSON.parse(localStorage.getItem('studyai_streak') || '{}');
+        const streak  = s.streak || g.streak || 0;
+        const xp      = g.xp || 0;
+        const badges  = (g.badges || []).length;
+        if (streak > 0 || xp > 0) {
+            const card = document.getElementById('retencao-card');
+            if (card) {
+                card.style.display = 'flex';
+                document.getElementById('ret-streak').textContent = streak;
+                document.getElementById('ret-xp').textContent = xp;
+                document.getElementById('ret-badges').textContent = badges;
+                document.getElementById('ret-titulo').textContent =
+                    streak > 1
+                        ? `Você tem ${streak} dias de streak — não perca agora`
+                        : xp > 0
+                        ? `Você já conquistou ${xp} XP de estudo`
+                        : 'Seu progresso está aqui';
+                document.getElementById('ret-sub').textContent =
+                    streak >= 7
+                        ? `${streak} dias seguidos é uma conquista rara. Não deixe zerar.`
+                        : `Continue de onde parou — suas ${badges} conquista${badges !== 1 ? 's' : ''} te esperam.`;
+            }
+        }
+    } catch {}
+})();
 </script>
 </body>
 </html>

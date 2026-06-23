@@ -1583,7 +1583,18 @@
     <div class="logo">Study<span>AI</span></div>
     <div style="display:flex;gap:8px;align-items:center;">
         <span id="premium-badge" style="display:none;background:#00d4aa22;border:1px solid #00d4aa44;color:#00d4aa;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;">⚡ Premium</span>
-        <a href="/progresso" style="
+        <!-- Pill de streak + XP -->
+        <a href="/progresso" id="gami-pill" style="
+            display:none;align-items:center;gap:8px;
+            background:#161616;border:1px solid #1e1e1e;color:#888;
+            text-decoration:none;padding:7px 13px;border-radius:10px;
+            font-size:12px;font-weight:700;transition:all 0.2s;white-space:nowrap;
+        " onmouseover="this.style.borderColor='#00d4aa44'" onmouseout="this.style.borderColor='#1e1e1e'">
+            <span id="gami-streak">🔥 0</span>
+            <span style="color:#2a2a2a">|</span>
+            <span id="gami-xp" style="color:#00d4aa">0 XP</span>
+        </a>
+        <a href="/progresso" id="progresso-link" style="
             display:inline-flex;align-items:center;gap:6px;
             background:#161616;border:1px solid #222;color:#555;
             text-decoration:none;padding:8px 14px;border-radius:10px;
@@ -3255,6 +3266,27 @@
         }
     })();
     // ── FIM ONBOARDING ──────────────────────────────────────────────────────
+
+    // ── GAMIFICAÇÃO — PILL NO HEADER ────────────────────────────────────────
+    (function initGamiHeader() {
+        try {
+            const g = JSON.parse(localStorage.getItem('studyai_gami') || '{}');
+            const s = JSON.parse(localStorage.getItem('studyai_streak') || '{}');
+            const xp = g.xp || 0;
+            const streak = s.streak || 0;
+            if (xp > 0 || streak > 0) {
+                const pill = document.getElementById('gami-pill');
+                if (pill) {
+                    pill.style.display = 'inline-flex';
+                    document.getElementById('gami-streak').textContent = '🔥 ' + streak;
+                    document.getElementById('gami-xp').textContent = xp + ' XP';
+                    // Esconde o link duplicado de progresso quando pill aparece
+                    const pl = document.getElementById('progresso-link');
+                    if (pl) pl.style.display = 'none';
+                }
+            }
+        } catch {}
+    })();
 
     if (inputFile) {
         inputFile.addEventListener('change', () => {
