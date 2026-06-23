@@ -297,6 +297,21 @@ function diasParaData(dataStr) {
     return Math.round(diff / 86400000);
 }
 
+// ── ONBOARDING ────────────────────────────────────────────────────────────
+function getOnboarding() {
+    try {
+        const ob = JSON.parse(localStorage.getItem('studyai_onboarding') || '{}');
+        return {
+            tipoProva:  ob.tipo_prova   || null,
+            objetivo:   ob.objetivo     || null,
+            dataProva:  ob.data_prova   || null,
+            horasMetaDia: parseFloat(ob.horas_por_dia) || 2,
+            materiasDificeis: (ob.materias_dificuldade || [])
+                .filter(m => m.nivel === 'alto' || m.nivel === 'médio')
+        };
+    } catch { return { horasMetaDia: 2, materiasDificeis: [] }; }
+}
+
 function labelRevisao(dias) {
     if (dias <= 0) return { texto: 'Revisar hoje', cls: 'rev-hoje' };
     if (dias === 1) return { texto: 'Amanhã', cls: 'rev-amanha' };
@@ -364,7 +379,7 @@ function buildTimeline(perfil) {
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
-function renderizar(analise, perfil, streakData) {
+function renderizar(analise, perfil, streakData, ob) {
     const container = document.getElementById('container');
     const hoje = new Date().toISOString().slice(0, 10);
     const { streak, ultima } = streakData;
@@ -372,13 +387,42 @@ function renderizar(analise, perfil, streakData) {
     const temas = perfil.temas || {};
     const temTemas = Object.keys(temas).length > 0;
 
+    // ── Dados do onboarding ───────────────────────────────────────────────
+    ob = ob || {};
+    const horasMetaDia    = ob.horasMetaDia    || 2;
+    const dataProva       = ob.dataProva       || null;
+    const tipoProva       = ob.tipoProva && ob.tipoProva !== 'Não informado' ? ob.tipoProva : null;
+    const materiasDif     = ob.materiasDificeis || [];
+    const diasAteProva    = dataProva ? diasParaData(dataProva) : null;
+    const horasTotaisRest = diasAteProva > 0 ? diasAteProva * horasMetaDia : null;
+    const semanasRest     = diasAteProva > 0 ? Math.ceil(diasAteProva / 7) : null;
+
+    // Temas difíceis do onboarding que ainda não foram estudados
+    const sugestoes = materiasDif
+        .filter(m => !temas[m.materia])
+        .slice(0, 5);
+
     if (!temTemas) {
+        const sugestLabel = tipoProva ? ` para o ${tipoProva}` : '';
+        const sugestBloco = sugestoes.length ? `
+            <div style="margin:28px 0 0;text-align:left;background:#111;border:1px solid #1e1e1e;border-radius:16px;padding:20px 24px;">
+                <div style="font-size:11px;font-weight:800;color:#333;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">
+                    🎯 Suas matérias prioritárias${sugestLabel}
+                </div>
+                ${sugestoes.map(m => `
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:${m.nivel==='alto'?'#ff4d4d':'#f59e0b'};flex-shrink:0;display:inline-block;"></span>
+                        <span style="font-size:13px;font-weight:600;color:#ccc;flex:1">${m.materia}</span>
+                        <span style="font-size:10px;font-weight:700;color:${m.nivel==='alto'?'#ff4d4d88':'#f59e0b88'};text-transform:uppercase">${m.nivel}</span>
+                    </div>`).join('')}
+            </div>` : '';
         container.innerHTML = `
         <div class="empty-state">
             <div style="font-size:52px;margin-bottom:16px">📊</div>
             <h2>Seu centro de comando está vazio</h2>
-            <p>Analise um material de estudo e avalie pelo menos um vídeo<br>para ativar seu dashboard personalizado.</p>
+            <p>Analise um material de estudo e avalie pelo menos um vídeo<br>para ativar seu dashboard personalizado${tipoProva ? ' para o ' + tipoProva : ''}.</p>
             <a href="/" class="btn-comecar">Começar a estudar →</a>
+            ${sugestBloco}
         </div>`;
         return;
     }
@@ -411,8 +455,9 @@ function renderizar(analise, perfil, streakData) {
     const faltaParaDominar = Math.max(0, 70 - temaBaixoDom);
     const pctProximo = temaBaixoDom < 70 ? Math.round((temaBaixoDom / 70) * 100) : 100;
 
-    // Missão do dia
+    // Missão do dia — prioriza matérias difíceis do onboarding ainda não estudadas
     const missao = analise.proxima_missao || {};
+    const missaoDifPendente = materiasDif.find(m => !temas[m.materia] || (temas[m.materia]?.dominio||0) < 50);
 
     // Evolução semanal
     const semana = evoluçãoSemanal(perfil);
@@ -424,11 +469,18 @@ function renderizar(analise, perfil, streakData) {
     // Alerta de inatividade
     const temAlerta = diasSem >= 3;
 
+    // Mensagem personalizada
+    const metaMensagem = diasAteProva > 0
+        ? `Faltam <strong style="color:#f59e0b">${diasAteProva} dias</strong> · Meta: <strong style="color:#00d4aa">${horasMetaDia}h</strong> hoje`
+        : `Meta diária: <strong style="color:#00d4aa">${horasMetaDia}h</strong> de estudo`;
+
     container.innerHTML = `
     <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <div>
-            <h1 style="font-size:22px;font-weight:900;margin-bottom:4px;">📊 Centro de Comando</h1>
-            <p style="color:#555;font-size:13px;">Seu progresso personalizado de aprendizado</p>
+            <h1 style="font-size:22px;font-weight:900;margin-bottom:4px;">
+                📊 Centro de Comando${tipoProva ? ' — ' + tipoProva : ''}
+            </h1>
+            <p style="color:#555;font-size:13px;">${metaMensagem}</p>
         </div>
         <div style="font-size:12px;color:#333;">${hoje}</div>
     </div>
@@ -459,12 +511,19 @@ function renderizar(analise, perfil, streakData) {
             <div class="stat-label">temas dominados</div>
             <div class="stat-sub">${Object.keys(temas).length - dominados} em progresso</div>
         </div>
+        ${diasAteProva > 0 ? `
         <div class="stat-card">
-            <div class="stat-icon">🎯</div>
+            <div class="stat-icon">📅</div>
+            <div class="stat-num" style="color:#f59e0b">${diasAteProva}</div>
+            <div class="stat-label">dias até a prova</div>
+            <div class="stat-sub">${horasTotaisRest}h disponíveis · ${horasMetaDia}h/dia</div>
+        </div>` : `
+        <div class="stat-card">
+            <div class="stat-icon">⏱</div>
             <div class="stat-num" style="color:#e8e8e8">${totalSessoes}</div>
             <div class="stat-label">sessões de estudo</div>
-            <div class="stat-sub">histórico total</div>
-        </div>
+            <div class="stat-sub">Meta: ${horasMetaDia}h/dia</div>
+        </div>`}
     </div>
 
     <!-- MISSÃO DO DIA -->
@@ -476,25 +535,60 @@ function renderizar(analise, perfil, streakData) {
             <div class="missao-titulo">${missao.tema}</div>
             <div class="missao-desc">${missao.acao}</div>
             <div class="missao-meta">
-                ${missao.tempo_estimado ? `<span class="missao-tag">⏱ ${missao.tempo_estimado}</span>` : ''}
+                ${missao.tempo_estimado ? `<span class="missao-tag">⏱ ${missao.tempo_estimado}</span>` : `<span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>`}
+                ${tipoProva ? `<span class="missao-tag" style="background:#1a1a1a;color:#555;border-color:#222">📋 ${tipoProva}</span>` : ''}
                 ${missao.motivo ? `<span class="missao-tag" style="background:#1a1a1a;color:#555;border-color:#222">${missao.motivo}</span>` : ''}
             </div>
         </div>
         <a href="/" class="btn-missao">Ir estudar →</a>
+    </div>` : missaoDifPendente ? `
+    <div class="missao-card">
+        <div class="missao-icon">🚨</div>
+        <div class="missao-body">
+            <div class="missao-label">Missão de hoje — prioridade alta</div>
+            <div class="missao-titulo">${missaoDifPendente.materia}</div>
+            <div class="missao-desc">
+                Você declarou <strong>dificuldade ${missaoDifPendente.nivel}</strong> nessa matéria
+                ${tipoProva ? `e ela tem peso no ${tipoProva}` : ''}.
+                ${diasAteProva > 0 ? `Com ${horasMetaDia}h/dia e ${diasAteProva} dias restantes, foque aqui agora.` : 'Comece por aqui para o maior impacto.'}
+            </div>
+            <div class="missao-meta">
+                <span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>
+                <span class="missao-tag" style="background:#1f0d0d;color:#f87171;border-color:#f8717133">🔴 Dificuldade ${missaoDifPendente.nivel}</span>
+            </div>
+        </div>
+        <a href="/" class="btn-missao">Estudar agora →</a>
     </div>` : `
     <div class="missao-card">
         <div class="missao-icon">🎯</div>
         <div class="missao-body">
             <div class="missao-label">Missão de hoje</div>
-            <div class="missao-titulo">${temaBaixoNome || 'Continue estudando'}</div>
+            <div class="missao-titulo">${temaBaixoNome || 'Continue avançando'}</div>
             <div class="missao-desc">
-                ${temaBaixoNome ? `Foque em <strong>${temaBaixoNome}</strong> — domínio atual ${temaBaixoDom}%. ${faltaParaDominar > 0 ? `Faltam ${faltaParaDominar}% para dominar.` : 'Quase lá!'}` : 'Analise um novo material para receber sua missão personalizada.'}
+                ${temaBaixoNome
+                    ? `Foque em <strong>${temaBaixoNome}</strong> — domínio atual ${temaBaixoDom}%. ${faltaParaDominar > 0 ? `Faltam ${faltaParaDominar}% para dominar.` : 'Quase lá!'}`
+                    : 'Analise um novo material para receber sua missão personalizada.'}
+            </div>
+            <div class="missao-meta">
+                <span class="missao-tag">⏱ Meta: ${horasMetaDia}h hoje</span>
+                ${diasAteProva > 0 ? `<span class="missao-tag" style="background:#1a1a1a;color:#f59e0b;border-color:#f59e0b22">📅 ${diasAteProva} dias</span>` : ''}
             </div>
         </div>
         <a href="/" class="btn-missao">Ir estudar →</a>
     </div>`}
 
-    ${analise.mensagem ? `<div class="motivacao-box">"${analise.mensagem}"</div>` : ''}
+    ${(() => {
+        let msg = analise.mensagem || '';
+        if (tipoProva && diasAteProva > 0) {
+            const dominadosN = temasList.filter(([,t]) => t.concluido).length;
+            msg = msg || `Para o ${tipoProva}, cada sessão conta.`;
+            const extra = dominadosN > 0
+                ? ` Você já dominou ${dominadosN} tema${dominadosN>1?'s':''} — continue assim.`
+                : ` Faltam ${diasAteProva} dias. Comece hoje.`;
+            msg = msg + extra;
+        }
+        return msg ? `<div class="motivacao-box">"${msg}"</div>` : '';
+    })()}
 
     <!-- PRÓXIMO NÍVEL -->
     ${temaBaixoNome && temaBaixoDom < 70 ? `
@@ -594,6 +688,92 @@ function renderizar(analise, perfil, streakData) {
         </div>` : '<div></div>'}
     </div>
 
+    <!-- TEMAS PRIORITÁRIOS (onboarding não estudados) -->
+    ${sugestoes.length ? `
+    <div class="section">
+        <div class="section-title">🎯 Temas prioritários${tipoProva ? ' — ' + tipoProva : ''}</div>
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:16px;padding:6px 18px;">
+            ${sugestoes.map(m => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #161616;">
+                <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;
+                    background:${m.nivel==='alto'?'#ff4d4d':'#f59e0b'};
+                    box-shadow:0 0 6px ${m.nivel==='alto'?'#ff4d4d66':'#f59e0b66'};
+                    display:inline-block"></span>
+                <span style="flex:1;font-size:13px;font-weight:700;color:#ddd">${m.materia}</span>
+                <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+                    color:${m.nivel==='alto'?'#ff4d4d88':'#f59e0b88'}">Dificuldade ${m.nivel}</span>
+                <span style="font-size:11px;color:#333;background:#161616;border-radius:6px;padding:2px 8px;">Não iniciado</span>
+                <a href="/" style="font-size:12px;font-weight:700;color:#00d4aa;text-decoration:none;
+                    white-space:nowrap;padding:6px 12px;background:#0a1f1a;border-radius:8px;
+                    border:1px solid #00d4aa22;transition:all .2s">Estudar →</a>
+            </div>`).join('')}
+        </div>
+    </div>` : ''}
+
+    <!-- CRONOGRAMA ATÉ A PROVA -->
+    ${semanasRest > 0 ? `
+    <div class="section">
+        <div class="section-title">📅 Cronograma — ${semanasRest} semana${semanasRest>1?'s':''} até ${tipoProva || 'a prova'}</div>
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:16px;padding:20px 24px;">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+                <div style="flex:1;">
+                    <div style="font-size:13px;color:#555;line-height:1.6">
+                        Estudando <strong style="color:#00d4aa">${horasMetaDia}h/dia</strong> você tem
+                        <strong style="color:#00d4aa">${horasTotaisRest}h totais</strong>
+                        — suficiente para cobrir
+                        <strong style="color:#f0f0f0">~${Math.min(Math.round(horasTotaisRest/2.5), Object.keys(temas).length + sugestoes.length)} temas</strong>.
+                    </div>
+                </div>
+                <div style="text-align:center;background:#0d0d0d;border:1px solid #1e1e1e;
+                    border-radius:12px;padding:12px 20px;flex-shrink:0;">
+                    <div style="font-size:28px;font-weight:900;color:#f59e0b;line-height:1">${diasAteProva}</div>
+                    <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase">dias restantes</div>
+                </div>
+            </div>
+            <!-- Barra de progresso até a prova -->
+            <div style="margin-bottom:8px;">
+                <div style="height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden;">
+                    <div style="height:100%;width:3%;background:linear-gradient(90deg,#00d4aa,#00bfa0);border-radius:3px;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#333;font-weight:600;">
+                    <span>Hoje</span><span>${tipoProva || 'Prova'} 🎯</span>
+                </div>
+            </div>
+            <!-- Prioridades por semana -->
+            ${semanasRest <= 12 ? `
+            <div style="margin-top:18px;">
+                <div style="font-size:10px;font-weight:800;color:#2a2a2a;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
+                    Foco por semana
+                </div>
+                <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
+                    ${Array.from({length: Math.min(semanasRest,6)}, (_, i) => {
+                        // Intercalar matérias difíceis com temas em progresso
+                        const allPriority = [
+                            ...materiasDif.map(m => ({ nome: m.materia, nivel: m.nivel })),
+                            ...temasList.filter(([,t]) => !t.concluido).map(([n]) => ({ nome: n, nivel: 'médio' }))
+                        ];
+                        const temasSemana = allPriority.slice(i * 2, i * 2 + 2);
+                        const corSemana = i === 0 ? '#ff4d4d' : i <= 2 ? '#f59e0b' : '#00d4aa';
+                        return `<div style="flex-shrink:0;background:#0d0d0d;border:1px solid #1e1e1e;
+                            border-radius:10px;padding:10px 14px;min-width:110px;">
+                            <div style="font-size:9px;font-weight:800;color:${corSemana};
+                                text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
+                                Sem. ${i+1}
+                            </div>
+                            ${temasSemana.map(t => `
+                                <div style="font-size:11px;font-weight:600;color:#777;
+                                    padding:3px 0;border-left:2px solid ${t.nivel==='alto'?'#ff4d4d33':t.nivel==='médio'?'#f59e0b33':'#1e1e1e'};
+                                    padding-left:7px;margin-bottom:2px;">
+                                    ${t.nome.length > 15 ? t.nome.slice(0,14)+'…' : t.nome}
+                                </div>`).join('')}
+                            ${temasSemana.length === 0 ? '<div style="font-size:11px;color:#2a2a2a">Revisão geral</div>' : ''}
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>` : ''}
+        </div>
+    </div>` : ''}
+
     <!-- HISTÓRICO -->
     ${timeline.length ? `
     <div class="section">
@@ -615,13 +795,14 @@ function renderizar(analise, perfil, streakData) {
 
 // ── INICIALIZAR ────────────────────────────────────────────────────────────
 async function inicializar() {
-    const perfil = getPerfil();
+    const perfil     = getPerfil();
     const streakData = getStreak();
-    const diasSem = calcularDiasSemEstudo(streakData.ultima);
-    const temTemas = Object.keys(perfil.temas || {}).length > 0;
+    const ob         = getOnboarding();
+    const diasSem    = calcularDiasSemEstudo(streakData.ultima);
+    const temTemas   = Object.keys(perfil.temas || {}).length > 0;
 
     if (!temTemas) {
-        renderizar({}, perfil, streakData);
+        renderizar({}, perfil, streakData, ob);
         return;
     }
 
@@ -632,13 +813,13 @@ async function inicializar() {
             body: JSON.stringify({ perfil, streak: streakData.streak, dias_sem_estudo: diasSem })
         });
         const analise = await res.json();
-        renderizar(analise, perfil, streakData);
+        renderizar(analise, perfil, streakData, ob);
     } catch {
         renderizar({
             proxima_missao: {}, revisoes_agendadas: [],
             principais_dificuldades: [], ranking_dominio: [],
             mensagem: 'Continue estudando — cada sessão conta.', alerta: null
-        }, perfil, streakData);
+        }, perfil, streakData, ob);
     }
 }
 
