@@ -3,8 +3,39 @@ import PyPDF2
 import io
 import base64
 from app.config import ANTHROPIC_API_KEY
+from app.cache import cache_key, get_cached, set_cached
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+
+def extrair_texto_docx(arquivo_bytes: bytes) -> str:
+    """Extrai texto de arquivos .docx usando python-docx."""
+    try:
+        from docx import Document
+        doc = Document(io.BytesIO(arquivo_bytes))
+        partes = []
+        for para in doc.paragraphs:
+            if para.text.strip():
+                partes.append(para.text.strip())
+        # Inclui texto de tabelas
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        partes.append(cell.text.strip())
+        return "\n".join(partes).strip()
+    except Exception as e:
+        return f"[Erro ao extrair DOCX: {e}]"
+
+
+def extrair_texto_txt(arquivo_bytes: bytes) -> str:
+    """Extrai texto de arquivos .txt com detecção de encoding."""
+    for enc in ("utf-8", "latin-1", "cp1252"):
+        try:
+            return arquivo_bytes.decode(enc).strip()
+        except UnicodeDecodeError:
+            continue
+    return arquivo_bytes.decode("utf-8", errors="replace").strip()
 
 
 def extrair_texto_pdf(arquivo_bytes: bytes) -> str:
@@ -132,7 +163,13 @@ def diagnosticar_material(conteudo: str) -> dict:
     """
     Analisa profundamente o material e retorna um diagnóstico completo.
     conteudo pode ser texto extraído de PDF, imagem, ou prompt do usuário.
+    Resultados são cacheados por 1h — mesmo material não reprocessa.
     """
+    chave = cache_key("diag", conteudo[:3000])
+    cached = get_cached(chave)
+    if cached is not None:
+        return cached
+
     resposta = client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=1500,
@@ -187,9 +224,11 @@ Regras:
             texto = texto.split("```")[1]
             if texto.startswith("json"):
                 texto = texto[4:]
-        return json.loads(texto.strip())
+        resultado = json.loads(texto.strip())
+        set_cached(chave, resultado)   # ← salva no cache
+        return resultado
     except Exception:
-        # Fallback simples se o JSON falhar
+        # Fallback simples se o JSON falhar (não cacheia erros)
         return {
             "temas": [],
             "ordem_recomendada": [],

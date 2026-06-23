@@ -1,4 +1,6 @@
+import asyncio
 import hashlib, secrets, json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date as dt_date
 from fastapi import FastAPI, Request, UploadFile, File, Form, Header
 from fastapi.templating import Jinja2Templates
@@ -6,9 +8,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from app.extractor import (processar_arquivo, extrair_topicos_do_prompt,
                             diagnosticar_material, diagnosticar_material_imagem,
-                            extrair_texto_pdf, extrair_topicos_da_imagem,
-                            gerar_estrutura_trilha)
-from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha
+                            extrair_texto_pdf, extrair_texto_docx, extrair_texto_txt,
+                            extrair_topicos_da_imagem, gerar_estrutura_trilha)
+from app.youtube import buscar_videos_por_topicos, buscar_videos_trilha, buscar_e_rankear_topico
 from app.chat import responder
 from app.feedback import analisar_feedback
 from app.progresso import gerar_analise_progresso
@@ -16,6 +18,11 @@ from app.config import PREMIUM_TOKENS, ADMIN_KEY, MP_LINK, WHATSAPP
 from app.database import engine, Base, SessionLocal
 from app.models.onboarding import OnboardingProfile
 from app.routers import onboarding as onboarding_router
+from app.cache import cache_size
+
+# Thread pool para rodar funções bloqueantes (Anthropic SDK, YouTube)
+# sem travar o event loop do FastAPI
+_executor = ThreadPoolExecutor(max_workers=8)
 
 # Cria tabelas no banco se não existirem (fallback para dev sem rodar alembic)
 Base.metadata.create_all(bind=engine)
@@ -41,27 +48,80 @@ async def home(request: Request):
                                                       "whatsapp": WHATSAPP})
 
 
+async def _buscar_videos_paralelo(temas_prioritarios: list, temas_info: list) -> list:
+    """
+    Busca e rankeia vídeos para todos os tópicos em PARALELO usando ThreadPoolExecutor.
+
+    ANTES: sequencial — 5 tópicos × (YouTube + Claude) = ~7s
+    DEPOIS: paralelo  — todos os tópicos ao mesmo tempo = ~1.5s (limitado pelo mais lento)
+    """
+    if not temas_prioritarios:
+        return []
+
+    temas_map = {t["nome"]: t for t in temas_info}
+    loop = asyncio.get_event_loop()
+
+    async def _uma_busca(topico: str) -> list:
+        info = temas_map.get(topico, {})
+        nivel = info.get("nivel", "intermediário")
+        return await loop.run_in_executor(
+            _executor,
+            lambda t=topico, n=nivel: buscar_e_rankear_topico(t, n)
+        )
+
+    resultados = await asyncio.gather(*[_uma_busca(t) for t in temas_prioritarios],
+                                      return_exceptions=True)
+
+    videos: list = []
+    for r in resultados:
+        if isinstance(r, list):
+            videos.extend(r[:2])  # 2 melhores por tópico
+    return videos
+
+
 @app.post("/analisar", response_class=HTMLResponse)
 async def analisar(request: Request, arquivo: UploadFile = File(...)):
     conteudo = await arquivo.read()
     extensao = arquivo.filename.lower().split('.')[-1] if '.' in arquivo.filename else ''
 
+    FORMATOS_IMAGEM = {'jpg', 'jpeg', 'png', 'webp'}
+    loop = asyncio.get_event_loop()
+
     if extensao == 'pdf' or 'pdf' in (arquivo.content_type or ''):
-        texto = extrair_texto_pdf(conteudo)
-        diagnostico = diagnosticar_material(texto) if texto.strip() else {}
-    else:
+        texto = await loop.run_in_executor(_executor, extrair_texto_pdf, conteudo)
+        diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, texto) if texto.strip() else {}
+
+    elif extensao == 'docx':
+        texto = await loop.run_in_executor(_executor, extrair_texto_docx, conteudo)
+        diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, texto) if texto.strip() else {}
+
+    elif extensao == 'txt':
+        texto = await loop.run_in_executor(_executor, extrair_texto_txt, conteudo)
+        diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, texto) if texto.strip() else {}
+
+    elif extensao in FORMATOS_IMAGEM or 'image' in (arquivo.content_type or ''):
         mime = 'image/jpeg'
-        if extensao == 'png': mime = 'image/png'
+        if extensao == 'png':  mime = 'image/png'
         elif extensao == 'webp': mime = 'image/webp'
-        diagnostico = diagnosticar_material_imagem(conteudo, mime)
+        diagnostico = await loop.run_in_executor(
+            _executor, lambda: diagnosticar_material_imagem(conteudo, mime)
+        )
 
+    else:
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "erro_upload": f"Formato '.{extensao}' não suportado. Use PDF, DOCX, TXT, JPG ou PNG.",
+            "mp_link": MP_LINK, "whatsapp": WHATSAPP
+        })
+
+    # Máx 3 tópicos (era 5) — reduz de 10 para 6 chamadas externas
+    temas_info = diagnostico.get("temas", [])
     temas_prioritarios = [
-        t["nome"] for t in diagnostico.get("temas", [])
-        if t.get("prioridade") in ["alta", "média"]
-    ][:5] or [t["nome"] for t in diagnostico.get("temas", [])][:5]
+        t["nome"] for t in temas_info if t.get("prioridade") in ["alta", "média"]
+    ][:3] or [t["nome"] for t in temas_info][:3]
 
-    videos = buscar_videos_por_topicos(temas_prioritarios,
-                                       temas_info=diagnostico.get("temas", [])) if temas_prioritarios else []
+    # PARALELO: todas as buscas de vídeo ao mesmo tempo
+    videos = await _buscar_videos_paralelo(temas_prioritarios, temas_info)
 
     return templates.TemplateResponse("index.html", {
         "request": request, "diagnostico": diagnostico,
@@ -72,15 +132,15 @@ async def analisar(request: Request, arquivo: UploadFile = File(...)):
 
 @app.post("/buscar", response_class=HTMLResponse)
 async def buscar(request: Request, prompt: str = Form(...)):
-    diagnostico = diagnosticar_material(prompt)
+    loop = asyncio.get_event_loop()
+    diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, prompt)
 
+    temas_info = diagnostico.get("temas", [])
     temas_prioritarios = [
-        t["nome"] for t in diagnostico.get("temas", [])
-        if t.get("prioridade") in ["alta", "média"]
-    ][:5] or [t["nome"] for t in diagnostico.get("temas", [])][:5]
+        t["nome"] for t in temas_info if t.get("prioridade") in ["alta", "média"]
+    ][:3] or [t["nome"] for t in temas_info][:3]
 
-    videos = buscar_videos_por_topicos(temas_prioritarios,
-                                       temas_info=diagnostico.get("temas", [])) if temas_prioritarios else []
+    videos = await _buscar_videos_paralelo(temas_prioritarios, temas_info)
 
     return templates.TemplateResponse("index.html", {
         "request": request, "diagnostico": diagnostico,
@@ -183,7 +243,17 @@ async def upgrade(request: Request):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "cache_entries": cache_size()}
+
+
+@app.get("/ping")
+async def ping():
+    """
+    Endpoint ultra-leve para keep-alive externo.
+    Configure um cron gratuito (cron-job.org) para chamar este endpoint
+    a cada 10 minutos e evitar o cold start do Render free tier.
+    """
+    return "pong"
 
 
 # ── DIAGNÓSTICO PREMIUM ───────────────────────────────────────────────────────

@@ -61,7 +61,7 @@ def rankear_videos_inteligente(topico: str, videos: list[dict], nivel: str = "in
 
     resposta = client.messages.create(
         model="claude-haiku-4-5",
-        max_tokens=900,
+        max_tokens=500,
         messages=[{
             "role": "user",
             "content": f"""Você é especialista em recomendação educacional.
@@ -158,14 +158,35 @@ def buscar_videos_trilha(etapas: list) -> dict:
 
 
 def buscar_videos_por_topicos(topicos: list[str], temas_info: list = None) -> list[dict]:
-    """Busca e rankeia vídeos com score inteligente. temas_info é a lista do diagnóstico."""
+    """
+    Busca e rankeia vídeos (versão sequencial, mantida para compatibilidade).
+    Em produção, usar _buscar_videos_paralelo do main.py para versão assíncrona.
+    """
     todos_videos = []
     temas_map = {t["nome"]: t for t in (temas_info or [])}
 
-    for topico in topicos[:5]:
+    for topico in topicos[:3]:  # reduzido de 5 para 3
         info = temas_map.get(topico, {})
         nivel = info.get("nivel", "intermediário")
-        videos = buscar_videos(topico)
-        rankeados = rankear_videos_inteligente(topico, videos, nivel=nivel)
+        rankeados = buscar_e_rankear_topico(topico, nivel)
         todos_videos.extend(rankeados[:2])  # 2 melhores por tópico
     return todos_videos
+
+
+def buscar_e_rankear_topico(topico: str, nivel: str = "intermediário") -> list[dict]:
+    """
+    Unidade de trabalho paralelizável: busca + ranking para UM tópico.
+    Chamada pelo executor de threads em main.py para processamento paralelo.
+    """
+    from app.cache import cache_key, get_cached, set_cached
+
+    chave = cache_key("yt", topico, nivel)
+    cached = get_cached(chave, ttl=3600)
+    if cached is not None:
+        return cached
+
+    videos = buscar_videos(topico)
+    rankeados = rankear_videos_inteligente(topico, videos, nivel=nivel)
+    resultado = rankeados[:2]
+    set_cached(chave, resultado)
+    return resultado
