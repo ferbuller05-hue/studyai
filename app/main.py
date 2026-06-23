@@ -287,23 +287,34 @@ async def trilha(request: Request, temas_json: str = Form(...),
 @app.post("/chat")
 async def chat(request: Request):
     data = await request.json()
-    resposta = responder(data.get("mensagem", ""),
-                         data.get("historico", []),
-                         data.get("topicos", []))
+    loop = asyncio.get_event_loop()
+    # run_in_executor: libera o event loop enquanto o SDK Anthropic bloqueia (~1s)
+    resposta = await loop.run_in_executor(
+        _executor,
+        lambda: responder(
+            data.get("mensagem", ""),
+            data.get("historico", []),
+            data.get("topicos", [])
+        )
+    )
     return JSONResponse({"resposta": resposta})
 
 
 @app.post("/feedback")
 async def feedback(request: Request):
     data = await request.json()
-    resultado = analisar_feedback(
-        tema=data.get("tema", ""),
-        video_titulo=data.get("video_titulo", ""),
-        entendimento=int(data.get("entendimento", 70)),
-        dificuldade=data.get("dificuldade", "médio"),
-        comentario=data.get("comentario", ""),
-        dominio_atual=int(data.get("dominio_atual", 0)),
-        historico_erros=data.get("historico_erros", [])
+    loop = asyncio.get_event_loop()
+    resultado = await loop.run_in_executor(
+        _executor,
+        lambda: analisar_feedback(
+            tema=data.get("tema", ""),
+            video_titulo=data.get("video_titulo", ""),
+            entendimento=int(data.get("entendimento", 70)),
+            dificuldade=data.get("dificuldade", "médio"),
+            comentario=data.get("comentario", ""),
+            dominio_atual=int(data.get("dominio_atual", 0)),
+            historico_erros=data.get("historico_erros", [])
+        )
     )
     return JSONResponse(resultado)
 
@@ -316,10 +327,14 @@ async def pagina_progresso(request: Request):
 @app.post("/progresso-analise")
 async def progresso_analise(request: Request):
     data = await request.json()
-    analise = gerar_analise_progresso(
-        data.get("perfil", {}),
-        int(data.get("streak", 0)),
-        int(data.get("dias_sem_estudo", 0))
+    loop = asyncio.get_event_loop()
+    analise = await loop.run_in_executor(
+        _executor,
+        lambda: gerar_analise_progresso(
+            data.get("perfil", {}),
+            int(data.get("streak", 0)),
+            int(data.get("dias_sem_estudo", 0))
+        )
     )
     return JSONResponse(analise)
 
@@ -416,19 +431,23 @@ async def diagnostico_premium_run(
 
     # ── Diagnóstico ───────────────────────────────────────────────────────
     diagnostico = {}
+    loop = asyncio.get_event_loop()
     if arquivo and arquivo.filename:
         conteudo = await arquivo.read()
         extensao = arquivo.filename.lower().split(".")[-1] if "." in arquivo.filename else ""
         if extensao == "pdf" or "pdf" in (arquivo.content_type or ""):
-            texto = extrair_texto_pdf(conteudo)
-            diagnostico = diagnosticar_material(texto) if texto.strip() else {}
+            texto = await loop.run_in_executor(_executor, extrair_texto_pdf, conteudo)
+            if texto.strip():
+                diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, texto)
         else:
             mime = "image/jpeg"
             if extensao == "png": mime = "image/png"
             elif extensao == "webp": mime = "image/webp"
-            diagnostico = diagnosticar_material_imagem(conteudo, mime)
+            diagnostico = await loop.run_in_executor(
+                _executor, lambda: diagnosticar_material_imagem(conteudo, mime)
+            )
     elif prompt:
-        diagnostico = diagnosticar_material(prompt)
+        diagnostico = await loop.run_in_executor(_executor, diagnosticar_material, prompt)
 
     # ── Métricas premium ──────────────────────────────────────────────────
     temas = diagnostico.get("temas", [])
