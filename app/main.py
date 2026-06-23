@@ -1,4 +1,5 @@
 import hashlib, secrets, json
+from datetime import date as dt_date
 from fastapi import FastAPI, Request, UploadFile, File, Form, Header
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +13,8 @@ from app.chat import responder
 from app.feedback import analisar_feedback
 from app.progresso import gerar_analise_progresso
 from app.config import PREMIUM_TOKENS, ADMIN_KEY, MP_LINK, WHATSAPP
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
+from app.models.onboarding import OnboardingProfile
 from app.routers import onboarding as onboarding_router
 
 # Cria tabelas no banco se não existirem (fallback para dev sem rodar alembic)
@@ -182,3 +184,99 @@ async def upgrade(request: Request):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+# ── DIAGNÓSTICO PREMIUM ───────────────────────────────────────────────────────
+
+@app.get("/diagnostico-premium", response_class=HTMLResponse)
+async def diagnostico_premium_page(request: Request):
+    """Página de entrada do diagnóstico premium — mostra formulário."""
+    return templates.TemplateResponse("diagnostico_premium.html", {
+        "request": request, "mp_link": MP_LINK, "whatsapp": WHATSAPP,
+        "diagnostico": None,
+    })
+
+
+@app.post("/diagnostico-premium", response_class=HTMLResponse)
+async def diagnostico_premium_run(
+    request: Request,
+    arquivo: UploadFile = File(None),
+    prompt: str = Form(default=""),
+    token: str = Form(default=""),
+    session_id: str = Form(default=""),
+):
+    if not is_premium(token):
+        return templates.TemplateResponse("upgrade.html", {
+            "request": request, "mp_link": MP_LINK, "whatsapp": WHATSAPP,
+            "motivo": "Diagnóstico Premium é exclusivo para assinantes.",
+        })
+
+    # ── Perfil de onboarding ──────────────────────────────────────────────
+    horas_por_dia = 2.0
+    dias_restantes = None
+    horas_totais = None
+
+    if session_id:
+        db = SessionLocal()
+        try:
+            perfil = db.query(OnboardingProfile).filter(
+                OnboardingProfile.session_id == session_id
+            ).first()
+            if perfil:
+                horas_por_dia = perfil.horas_por_dia
+                if perfil.data_prova:
+                    dias_restantes = max(0, (perfil.data_prova - dt_date.today()).days)
+                    horas_totais = round(dias_restantes * horas_por_dia)
+        finally:
+            db.close()
+
+    # ── Diagnóstico ───────────────────────────────────────────────────────
+    diagnostico = {}
+    if arquivo and arquivo.filename:
+        conteudo = await arquivo.read()
+        extensao = arquivo.filename.lower().split(".")[-1] if "." in arquivo.filename else ""
+        if extensao == "pdf" or "pdf" in (arquivo.content_type or ""):
+            texto = extrair_texto_pdf(conteudo)
+            diagnostico = diagnosticar_material(texto) if texto.strip() else {}
+        else:
+            mime = "image/jpeg"
+            if extensao == "png": mime = "image/png"
+            elif extensao == "webp": mime = "image/webp"
+            diagnostico = diagnosticar_material_imagem(conteudo, mime)
+    elif prompt:
+        diagnostico = diagnosticar_material(prompt)
+
+    # ── Métricas premium ──────────────────────────────────────────────────
+    temas = diagnostico.get("temas", [])
+    temas_alta  = [t for t in temas if t.get("prioridade") == "alta"]
+    temas_media = [t for t in temas if t.get("prioridade") == "média"]
+    temas_baixa = [t for t in temas if t.get("prioridade") not in ("alta", "média")]
+
+    if dias_restantes and dias_restantes > 0 and horas_totais:
+        horas_nec = len(temas_alta) * 3 + len(temas_media) * 2 + len(temas_baixa) * 1
+        cobertura = min(1.0, horas_totais / max(horas_nec, 1))
+        chance = int(min(95, max(30, 35 + cobertura * 55)))
+    else:
+        chance = 58
+
+    recomendacao = temas_alta[0] if temas_alta else (temas_media[0] if temas_media else None)
+
+    temas_cobre  = min(int(horas_totais / 2.5), len(temas)) if horas_totais else 0
+    semanas_disponiveis = min(max(1, dias_restantes // 7), 8) if dias_restantes else 0
+
+    return templates.TemplateResponse("diagnostico_premium.html", {
+        "request":               request,
+        "diagnostico":           diagnostico,
+        "temas_alta":            temas_alta,
+        "temas_media":           temas_media,
+        "temas_baixa":           temas_baixa,
+        "chance":                chance,
+        "horas_por_dia":         horas_por_dia,
+        "dias_restantes":        dias_restantes,
+        "horas_totais":          horas_totais,
+        "recomendacao":          recomendacao,
+        "temas_cobre":           temas_cobre,
+        "semanas_disponiveis":   semanas_disponiveis,
+        "mp_link":               MP_LINK,
+        "whatsapp":              WHATSAPP,
+    })

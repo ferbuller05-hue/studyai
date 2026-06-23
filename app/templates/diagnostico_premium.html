@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Premium · StudyAI</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #080808;
+            color: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── UPLOAD SCREEN ─────────────────────────────────────────────────── */
+        .upload-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: radial-gradient(ellipse at 50% 0%, #00d4aa0a 0%, transparent 70%);
+        }
+        .upload-box {
+            width: 100%;
+            max-width: 480px;
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+        }
+        .upload-logo { font-size: 22px; font-weight: 900; color: #f0f0f0; margin-bottom: 32px; }
+        .upload-logo span { color: #00d4aa; }
+        .upload-badge {
+            display: inline-block;
+            background: #00d4aa18;
+            border: 1px solid #00d4aa44;
+            color: #00d4aa;
+            font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 100px;
+            margin-left: 8px; vertical-align: middle;
+        }
+        .upload-box h1 {
+            font-size: 28px; font-weight: 900;
+            color: #f0f0f0; margin-bottom: 10px; line-height: 1.2;
+        }
+        .upload-box p { font-size: 14px; color: #555; margin-bottom: 32px; line-height: 1.6; }
+        .upload-form-area { display: flex; flex-direction: column; gap: 12px; }
+        .upload-field-label {
+            font-size: 10px; font-weight: 700; color: #333;
+            text-transform: uppercase; letter-spacing: 1px;
+            text-align: left; margin-bottom: 4px;
+        }
+        .upload-file-input {
+            width: 100%;
+            background: #161616;
+            border: 1px dashed #2a2a2a;
+            border-radius: 14px;
+            padding: 20px;
+            font-size: 13px; color: #555;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-file-input:hover { border-color: #00d4aa44; }
+        .upload-divider { font-size: 12px; color: #333; text-align: center; }
+        .upload-textarea {
+            width: 100%;
+            background: #161616;
+            border: 1px solid #1e1e1e;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 13px; font-family: inherit; color: #e8e8e8;
+            resize: vertical; min-height: 80px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .upload-textarea:focus { border-color: #00d4aa44; }
+        .upload-textarea::placeholder { color: #333; }
+        .upload-submit {
+            width: 100%; background: #00d4aa; color: #080808;
+            border: none; border-radius: 14px; padding: 16px;
+            font-size: 15px; font-weight: 800; cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .upload-submit:hover { background: #00bfa0; }
+        .upload-submit:active { transform: scale(0.98); }
+        .upload-note { font-size: 11px; color: #333; margin-top: 8px; }
+
+        /* ── RESULTS LAYOUT ────────────────────────────────────────────────── */
+        .dp-layout {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Header */
+        .dp-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 0 0;
+            margin-bottom: 24px;
+        }
+        .dp-logo { font-size: 18px; font-weight: 900; color: #f0f0f0; text-decoration: none; }
+        .dp-logo span { color: #00d4aa; }
+        .dp-badge-header {
+            background: #00d4aa18;
+            border: 1px solid #00d4aa44;
+            color: #00d4aa;
+            font-size: 11px; font-weight: 700;
+            padding: 4px 12px; border-radius: 100px;
+        }
+        .dp-back {
+            margin-left: auto;
+            color: #444; font-size: 13px; font-weight: 600;
+            text-decoration: none; transition: color 0.2s;
+        }
+        .dp-back:hover { color: #888; }
+
+        /* Success bar */
+        .dp-success-bar {
+            background: #0a1f1a;
+            border: 1px solid #00d4aa22;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 13px; color: #00d4aa;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 28px;
+        }
+        .dp-check {
+            width: 22px; height: 22px;
+            background: #00d4aa;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; color: #080808;
+            flex-shrink: 0;
+        }
+
+        /* ── HERO ──────────────────────────────────────────────────────────── */
+        .dp-hero {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            background: #0e0e0e;
+            border: 1px solid #1e1e1e;
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .dp-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; left: -60px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, #00d4aa0f 0%, transparent 70%);
+            pointer-events: none;
+        }
+        @media (max-width: 600px) { .dp-hero { flex-direction: column; padding: 28px 24px; } }
+
+        /* Circular meter */
+        .dp-circular-wrapper {
+            position: relative;
+            width: 180px; height: 180px;
+            flex-shrink: 0;
+        }
+        .dp-circular {
+            width: 180px; height: 180px;
+            transform: rotate(-90deg);
+        }
+        .dp-circle-bg {
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 12;
+        }
+        .dp-circle-fg {
+            fill: none;
+            stroke: #00d4aa;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 8px #00d4aa55);
+        }
+        .dp-circle-fg.danger { stroke: #ff4d4d; filter: drop-shadow(0 0 8px #ff4d4d55); }
+        .dp-circle-fg.warning { stroke: #f59e0b; filter: drop-shadow(0 0 8px #f59e0b55); }
+        .dp-circular-inner {
+            position: absolute;
+            inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .dp-chance-num {
+            font-size: 42px; font-weight: 900; line-height: 1;
+            color: #00d4aa;
+            font-variant-numeric: tabular-nums;
+        }
+        .dp-chance-num.danger { color: #ff4d4d; }
+        .dp-chance-num.warning { color: #f59e0b; }
+        .dp-chance-label {
+            font-size: 10px; color: #444; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            text-align: center; margin-top: 4px; line-height: 1.4;
+        }
+
+        /* Hero info */
+        .dp-hero-info { flex: 1; }
+        .dp-hero-title {
+            font-size: 22px; font-weight: 900;
+            color: #f0f0f0; margin-bottom: 10px; line-height: 1.3;
+        }
+        .dp-hero-sub { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 24px; }
+        .dp-hero-sub strong { color: #00d4aa; }
+
+        .dp-stats-mini { display: flex; gap: 20px; }
+        .dp-stat-mini { text-align: center; }
+        .dp-stat-mini-val {
+            font-size: 28px; font-weight: 900; line-height: 1;
+        }
+        .dp-stat-mini-label { font-size: 11px; color: #444; font-weight: 600; margin-top: 2px; }
+        .red { color: #ff4d4d; }
+        .yellow { color: #f59e0b; }
+        .green { color: #22c55e; }
+
+        /* ── STATS ROW ─────────────────────────────────────────────────────── */
+        .dp-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 600px) { .dp-stats-row { grid-template-columns: 1fr; } }
+
+        .dp-stat-card {
+            background: #0e0e0e;
+            border: 1px solid #1e1e1e;
+            border-radius: 18px;
+            padding: 24px 20px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .dp-stat-card:hover { border-color: #2a2a2a; transform: translateY(-2px); }
+        .dp-stat-card.critical { border-color: #ff4d4d22; background: #180d0d; }
+        .dp-stat-icon { font-size: 20px; margin-bottom: 10px; }
+        .dp-stat-val { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+        .dp-stat-label { font-size: 12px; color: #888; font-weight: 600; margin-bottom: 4px; }
+        .dp-stat-hint { font-size: 11px; color: #333; }
+
+        /* ── RECOMENDAÇÃO IMEDIATA ─────────────────────────────────────────── */
+        .dp-rec {
+            background: linear-gradient(135deg, #0a1a14 0%, #0e0e0e 100%);
+            border: 1px solid #00d4aa33;
+            border-left: 3px solid #00d4aa;
+            border-radius: 18px;
+            padding: 28px 32px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .dp-rec-tag {
+            font-size: 10px; font-weight: 800; color: #00d4aa;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+        .dp-rec-title {
+            font-size: 20px; font-weight: 900; color: #f0f0f0;
+            margin-bottom: 8px; line-height: 1.3;
+        }
+        .dp-rec-title strong { color: #00d4aa; }
+        .dp-rec-body { font-size: 14px; color: #666; line-height: 1.7; margin-bottom: 16px; }
+        .dp-rec-subtopicos { display: flex; flex-wrap: wrap; gap: 8px; }
+        .dp-sub-chip {
+            background: #0d1f19;
+            border: 1px solid #00d4aa22;
+            border-radius: 100px;
+            padding: 5px 12px;
+            font-size: 12px; color: #00d4aa88; font-weight: 600;
+        }
+
+        /* ── TWO COLUMNS ───────────────────────────────────────────────────── */
+        .dp-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 600px) { .dp-two-col { grid-template-columns: 1fr; } }
+
+        .dp-col {
+            background: #0e0e0e;
+            border: 1px solid #1e1e1e;
+            border-radius: 18px;
+            padding: 24px;
+        }
+        .dp-col-title {
+            font-size: 12px; font-weight: 800; color: #444;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        /* Tema rows — críticos */
+        .dp-tema-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #141414;
+        }
+        .dp-tema-row:last-child { border-bottom: none; }
+        .dp-tema-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dp-tema-row.alta .dp-tema-dot { background: #ff4d4d; box-shadow: 0 0 6px #ff4d4d88; }
+        .dp-tema-row.media .dp-tema-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b88; }
+        .dp-tema-info { flex: 1; }
+        .dp-tema-nome { font-size: 13px; font-weight: 700; color: #ddd; }
+        .dp-tema-pri {
+            font-size: 9px; font-weight: 800; letter-spacing: 1px;
+            margin-top: 1px;
+        }
+        .dp-tema-row.alta .dp-tema-pri { color: #ff4d4d88; }
+        .dp-tema-row.media .dp-tema-pri { color: #f59e0b88; }
+        .dp-tema-hrs {
+            font-size: 11px; color: #333; font-weight: 700;
+            background: #161616; border-radius: 6px; padding: 2px 8px;
+        }
+
+        /* Dominados */
+        .dp-dom-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #141414;
+        }
+        .dp-dom-row:last-child { border-bottom: none; }
+        .dp-dom-check {
+            width: 20px; height: 20px;
+            background: #0f2a1a;
+            border: 1px solid #22c55e44;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #22c55e; flex-shrink: 0;
+        }
+        .dp-dom-nome { flex: 1; font-size: 13px; font-weight: 600; color: #aaa; }
+        .dp-dom-val { font-size: 12px; font-weight: 800; color: #22c55e; }
+        .dp-empty-state {
+            font-size: 13px; color: #333; line-height: 1.8;
+            padding: 16px 0; text-align: center;
+        }
+
+        /* ── PREVISÃO DE PROGRESSO ─────────────────────────────────────────── */
+        .dp-progresso {
+            background: #0e0e0e;
+            border: 1px solid #1e1e1e;
+            border-radius: 18px;
+            padding: 28px 28px 24px;
+            margin-bottom: 16px;
+        }
+        .dp-progresso-title {
+            font-size: 14px; font-weight: 800; color: #e0e0e0;
+            margin-bottom: 6px;
+        }
+        .dp-progresso-sub {
+            font-size: 13px; color: #555; margin-bottom: 24px; line-height: 1.6;
+        }
+        .dp-progresso-sub strong { color: #00d4aa; }
+
+        /* Timeline */
+        .dp-timeline { margin-bottom: 28px; }
+        .dp-timeline-track {
+            height: 6px; background: #1a1a1a;
+            border-radius: 3px; margin-bottom: 8px;
+            overflow: hidden; position: relative;
+        }
+        .dp-timeline-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4aa, #00bfa0);
+            border-radius: 3px;
+            position: relative;
+            transition: width 1.5s ease;
+        }
+        .dp-timeline-fill::after {
+            content: '📍';
+            position: absolute;
+            right: -2px; top: -14px;
+            font-size: 18px;
+        }
+        .dp-timeline-labels {
+            display: flex; justify-content: space-between;
+            font-size: 11px; color: #333; font-weight: 600;
+        }
+
+        /* Semanas */
+        .dp-semanas {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .dp-semana {
+            flex-shrink: 0;
+            background: #141414;
+            border: 1px solid #1e1e1e;
+            border-radius: 12px;
+            padding: 12px 14px;
+            min-width: 120px;
+        }
+        .dp-semana-num {
+            font-size: 10px; font-weight: 800; color: #333;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .dp-semana-tema {
+            font-size: 11px; font-weight: 600; color: #888;
+            padding: 3px 0;
+            border-left: 2px solid #222;
+            padding-left: 8px;
+            margin-bottom: 4px;
+        }
+        .dp-semana-tema.alta { border-color: #ff4d4d; color: #ff4d4dcc; }
+        .dp-semana-tema.média { border-color: #f59e0b; color: #f59e0bcc; }
+        .dp-semana-tema.baixa { border-color: #333; }
+
+        /* Sem data */
+        .dp-progresso-empty { text-align: center; }
+        .dp-no-date { padding: 24px 0; }
+        .dp-no-date div { font-size: 32px; margin-bottom: 12px; }
+        .dp-no-date p { font-size: 14px; color: #444; margin-bottom: 16px; }
+        .dp-config-btn {
+            display: inline-block;
+            background: #1a1a1a; border: 1px solid #2a2a2a;
+            color: #00d4aa; font-size: 13px; font-weight: 700;
+            padding: 10px 20px; border-radius: 12px;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .dp-config-btn:hover { background: #0a1f1a; border-color: #00d4aa44; }
+
+        /* ── CTA ───────────────────────────────────────────────────────────── */
+        .dp-cta {
+            background: #0e0e0e;
+            border: 1px solid #1e1e1e;
+            border-radius: 18px;
+            padding: 28px 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        @media (max-width: 600px) { .dp-cta { flex-direction: column; } }
+        .dp-cta-btn {
+            flex: 1;
+            background: #00d4aa; color: #080808;
+            border: none; border-radius: 14px; padding: 16px 24px;
+            font-size: 15px; font-weight: 800; cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+        }
+        .dp-cta-btn:hover { background: #00bfa0; }
+        .dp-cta-btn:active { transform: scale(0.98); }
+        .dp-cta-sec {
+            color: #333; font-size: 13px; font-weight: 600;
+            text-decoration: none; white-space: nowrap;
+            transition: color 0.2s;
+        }
+        .dp-cta-sec:hover { color: #666; }
+
+        /* ── REVEAL ANIMATION ──────────────────────────────────────────────── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+    </style>
+</head>
+<body>
+
+{% if not diagnostico %}
+<!-- ── TELA DE UPLOAD ─────────────────────────────────────────────────────── -->
+<div class="upload-screen">
+    <div class="upload-box">
+        <div class="upload-logo">Study<span>AI</span><span class="upload-badge">⚡ Premium</span></div>
+        <h1>Diagnóstico Completo</h1>
+        <p>Envie seu material e descubra sua chance de aprovação, temas críticos e cronograma personalizado.</p>
+        <form method="POST" action="/diagnostico-premium" enctype="multipart/form-data" class="upload-form-area">
+            <div>
+                <div class="upload-field-label">Enviar arquivo (PDF, imagem)</div>
+                <input type="file" name="arquivo" accept=".pdf,.jpg,.jpeg,.png,.webp" class="upload-file-input">
+            </div>
+            <div class="upload-divider">ou</div>
+            <div>
+                <div class="upload-field-label">Descrever o conteúdo</div>
+                <textarea name="prompt" class="upload-textarea" placeholder="Ex: questões de matemática financeira, juros compostos, FUVEST 2024..."></textarea>
+            </div>
+            <input type="hidden" name="token" id="token-input">
+            <input type="hidden" name="session_id" id="sid-input">
+            <button type="submit" class="upload-submit">Analisar meu material →</button>
+            <div class="upload-note">Resultado em segundos · exclusivo para assinantes Premium</div>
+        </form>
+    </div>
+</div>
+
+{% else %}
+<!-- ── TELA DE RESULTADOS ─────────────────────────────────────────────────── -->
+<div class="dp-layout">
+
+    <!-- Header -->
+    <header class="dp-header">
+        <a href="/" class="dp-logo">Study<span>AI</span></a>
+        <span class="dp-badge-header">⚡ Diagnóstico Premium</span>
+        <a href="/" class="dp-back">← Nova análise</a>
+    </header>
+
+    <!-- Success bar -->
+    <div class="dp-success-bar reveal">
+        <div class="dp-check">✓</div>
+        <span>
+            Análise concluída &nbsp;·&nbsp; {{ diagnostico.temas|length }} temas identificados
+            {% if horas_totais %}&nbsp;·&nbsp; {{ horas_totais }}h disponíveis até a prova{% endif %}
+        </span>
+    </div>
+
+    <!-- Hero: Chance de Aprovação -->
+    <div class="dp-hero reveal">
+        <div class="dp-circular-wrapper">
+            <svg class="dp-circular" viewBox="0 0 200 200">
+                <circle class="dp-circle-bg" cx="100" cy="100" r="80"/>
+                <circle class="dp-circle-fg
+                    {% if chance < 45 %}danger{% elif chance < 65 %}warning{% endif %}"
+                    cx="100" cy="100" r="80"
+                    stroke-dasharray="502"
+                    stroke-dashoffset="502"
+                    id="chance-circle"/>
+            </svg>
+            <div class="dp-circular-inner">
+                <div class="dp-chance-num
+                    {% if chance < 45 %}danger{% elif chance < 65 %}warning{% endif %}"
+                    id="chance-num">0%</div>
+                <div class="dp-chance-label">chance de<br>aprovação</div>
+            </div>
+        </div>
+
+        <div class="dp-hero-info">
+            <div class="dp-hero-title">
+                {% if chance >= 75 %}Você está no caminho certo 🎯
+                {% elif chance >= 55 %}Atenção necessária — ajuste o ritmo ⚠️
+                {% else %}Situação crítica — comece agora 🚨{% endif %}
+            </div>
+            <div class="dp-hero-sub">
+                {% if horas_totais and dias_restantes %}
+                    Estudando <strong>{{ horas_por_dia }}h/dia</strong> você tem
+                    <strong>{{ horas_totais }}h</strong> até a prova —
+                    o suficiente para cobrir <strong>{{ temas_cobre }} de {{ diagnostico.temas|length }} temas</strong>.
+                {% else %}
+                    Configure sua data de prova para ver a previsão personalizada de cobertura.
+                {% endif %}
+            </div>
+            <div class="dp-stats-mini">
+                <div class="dp-stat-mini">
+                    <div class="dp-stat-mini-val red">{{ temas_alta|length }}</div>
+                    <div class="dp-stat-mini-label">críticos</div>
+                </div>
+                <div class="dp-stat-mini">
+                    <div class="dp-stat-mini-val yellow">{{ temas_media|length }}</div>
+                    <div class="dp-stat-mini-label">moderados</div>
+                </div>
+                <div class="dp-stat-mini">
+                    <div class="dp-stat-mini-val green" id="dom-hero">0</div>
+                    <div class="dp-stat-mini-label">dominados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="dp-stats-row reveal">
+        <div class="dp-stat-card">
+            <div class="dp-stat-icon">⏱</div>
+            <div class="dp-stat-val" id="horas-val" style="color:#00d4aa">
+                {{ horas_totais if horas_totais else "—" }}
+            </div>
+            <div class="dp-stat-label">horas restantes</div>
+            {% if horas_totais %}
+            <div class="dp-stat-hint">{{ dias_restantes }} dias × {{ horas_por_dia }}h/dia</div>
+            {% else %}
+            <div class="dp-stat-hint" style="color:#ff4d4d44;">Configure a data da prova</div>
+            {% endif %}
+        </div>
+        <div class="dp-stat-card critical">
+            <div class="dp-stat-icon">🔴</div>
+            <div class="dp-stat-val red">{{ temas_alta|length }}</div>
+            <div class="dp-stat-label">temas críticos</div>
+            <div class="dp-stat-hint">prioridade alta — resolver primeiro</div>
+        </div>
+        <div class="dp-stat-card">
+            <div class="dp-stat-icon">✅</div>
+            <div class="dp-stat-val green" id="dom-stat">0</div>
+            <div class="dp-stat-label">temas dominados</div>
+            <div class="dp-stat-hint">do seu histórico de estudo</div>
+        </div>
+    </div>
+
+    <!-- Recomendação Imediata -->
+    {% if recomendacao %}
+    <div class="dp-rec reveal">
+        <div class="dp-rec-tag">⚡ Recomendação Imediata</div>
+        <div class="dp-rec-title">Comece por <strong>{{ recomendacao.nome }}</strong></div>
+        <div class="dp-rec-body">
+            {{ recomendacao.descricao_simples or "Este é o tema de maior peso para a sua aprovação. Dedicar as próximas sessões a ele tem o maior impacto no resultado final." }}
+        </div>
+        {% if recomendacao.subtopicos %}
+        <div class="dp-rec-subtopicos">
+            {% for s in recomendacao.subtopicos[:5] %}
+            <span class="dp-sub-chip">{{ s }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Temas Críticos + Dominados -->
+    <div class="dp-two-col reveal">
+        <div class="dp-col">
+            <div class="dp-col-title">🔴 Temas Críticos</div>
+            {% for t in temas_alta %}
+            <div class="dp-tema-row alta">
+                <div class="dp-tema-dot"></div>
+                <div class="dp-tema-info">
+                    <div class="dp-tema-nome">{{ t.nome }}</div>
+                    <div class="dp-tema-pri">Alta prioridade</div>
+                </div>
+                <div class="dp-tema-hrs">~3h</div>
+            </div>
+            {% endfor %}
+            {% for t in temas_media %}
+            <div class="dp-tema-row media">
+                <div class="dp-tema-dot"></div>
+                <div class="dp-tema-info">
+                    <div class="dp-tema-nome">{{ t.nome }}</div>
+                    <div class="dp-tema-pri">Prioridade média</div>
+                </div>
+                <div class="dp-tema-hrs">~2h</div>
+            </div>
+            {% endfor %}
+            {% if not temas_alta and not temas_media %}
+            <div class="dp-empty-state">Nenhum tema crítico identificado.</div>
+            {% endif %}
+        </div>
+        <div class="dp-col">
+            <div class="dp-col-title">✅ Temas Dominados</div>
+            <div id="dom-list">
+                <div class="dp-empty-state">Sem histórico ainda.<br>Estude e avalie os vídeos para ver o progresso aqui.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previsão de Progresso -->
+    {% if dias_restantes and dias_restantes > 0 %}
+    <div class="dp-progresso reveal">
+        <div class="dp-progresso-title">📈 Previsão de Progresso</div>
+        <div class="dp-progresso-sub">
+            Estudando {{ horas_por_dia }}h/dia você cobre
+            <strong>{{ temas_cobre }} de {{ diagnostico.temas|length }} temas</strong>
+            até a prova — foque nos críticos primeiro.
+        </div>
+        <div class="dp-timeline">
+            <div class="dp-timeline-track">
+                <div class="dp-timeline-fill" id="tl-fill" style="width:0%"></div>
+            </div>
+            <div class="dp-timeline-labels">
+                <span>Hoje</span>
+                <span>Metade do caminho</span>
+                <span>Prova 🎯</span>
+            </div>
+        </div>
+        {% if semanas_disponiveis > 0 %}
+        <div class="dp-semanas">
+            {% for semana in range(semanas_disponiveis) %}
+            {% set inicio = (semana * horas_por_dia * 7 / 2.5)|int %}
+            {% set fim = ((semana + 1) * horas_por_dia * 7 / 2.5)|int %}
+            <div class="dp-semana">
+                <div class="dp-semana-num">Sem. {{ semana + 1 }}</div>
+                {% if diagnostico.temas[inicio:fim] %}
+                    {% for t in diagnostico.temas[inicio:fim] %}
+                    <div class="dp-semana-tema {{ t.prioridade }}">
+                        {{ t.nome[:18] }}{% if t.nome|length > 18 %}…{% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="dp-semana-tema baixa">Revisão geral</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="dp-progresso reveal dp-progresso-empty">
+        <div class="dp-progresso-title">📈 Previsão de Progresso</div>
+        <div class="dp-no-date">
+            <div>📅</div>
+            <p>Configure a data da sua prova para ver o cronograma semanal personalizado.</p>
+            <a href="/" class="dp-config-btn">Configurar data de prova →</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CTA -->
+    <div class="dp-cta reveal">
+        <form method="POST" action="/trilha" id="trilha-form" style="flex:1">
+            <input type="hidden" name="temas_json" value="{{ diagnostico.temas | tojson }}">
+            <input type="hidden" name="token" id="cta-token">
+            <input type="hidden" name="perfil_json" id="cta-perfil">
+            <button type="submit" class="dp-cta-btn">🎯 Montar Trilha Personalizada →</button>
+        </form>
+        <a href="/" class="dp-cta-sec">← Nova análise</a>
+    </div>
+
+</div>
+{% endif %}
+
+<script>
+    // ── Token e session_id do localStorage ───────────────────────────────────
+    const _token = localStorage.getItem('studyai_token') || '';
+    const _sid   = localStorage.getItem('studyai_session_id') || '';
+
+    ['token-input','cta-token'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = _token;
+    });
+    if (document.getElementById('sid-input'))
+        document.getElementById('sid-input').value = _sid;
+
+    // Perfil onboarding para a trilha
+    const _ob = JSON.parse(localStorage.getItem('studyai_onboarding') || '{}');
+    const _ctaPerfil = document.getElementById('cta-perfil');
+    if (_ctaPerfil) _ctaPerfil.value = JSON.stringify(_ob);
+
+    // ── Reveal sequencial ─────────────────────────────────────────────────────
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+        el.style.transition = `opacity 0.55s ease ${i * 140}ms, transform 0.55s ease ${i * 140}ms`;
+        requestAnimationFrame(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+    });
+
+    // ── Animação circular — Chance de Aprovação ───────────────────────────────
+    const TARGET  = {{ chance if diagnostico else 0 }};
+    const circle  = document.getElementById('chance-circle');
+    const numEl   = document.getElementById('chance-num');
+
+    if (circle && numEl) {
+        const CIRC = 502;
+        let current = 0;
+        const step  = Math.ceil(TARGET / 60);
+
+        setTimeout(() => {
+            circle.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(0.4,0,0.2,1)';
+            circle.style.strokeDashoffset = CIRC * (1 - TARGET / 100);
+
+            const ticker = setInterval(() => {
+                current = Math.min(current + step, TARGET);
+                numEl.textContent = current + '%';
+                if (current >= TARGET) clearInterval(ticker);
+            }, 1800 / (TARGET / step));
+        }, 400);
+    }
+
+    // ── Temas dominados do localStorage ───────────────────────────────────────
+    (function carregarDominados() {
+        const perfil = JSON.parse(localStorage.getItem('studyai_perfil') || '{}');
+        const dominados = Object.entries(perfil)
+            .filter(([, d]) => (d.dominio || 0) >= 70)
+            .map(([nome, d]) => ({ nome, dominio: d.dominio }))
+            .sort((a, b) => b.dominio - a.dominio);
+
+        const count = dominados.length;
+        ['dom-hero','dom-stat'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = count;
+        });
+
+        const list = document.getElementById('dom-list');
+        if (list && count > 0) {
+            list.innerHTML = dominados.map(d => `
+                <div class="dp-dom-row">
+                    <span class="dp-dom-check">✓</span>
+                    <span class="dp-dom-nome">${d.nome}</span>
+                    <span class="dp-dom-val">${d.dominio}%</span>
+                </div>
+            `).join('');
+        }
+    })();
+
+    // ── Timeline ──────────────────────────────────────────────────────────────
+    const tlFill = document.getElementById('tl-fill');
+    if (tlFill) {
+        setTimeout(() => {
+            tlFill.style.transition = 'width 1.6s ease';
+            tlFill.style.width = '4%';
+        }, 900);
+    }
+</script>
+</body>
+</html>
